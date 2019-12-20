@@ -628,6 +628,70 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("FS_OPTIONS", 48, ParametersG2, fs_options, 0),
 
+    // @Param: CURRENT_EXTERNAL
+    // @DisplayName: Current External
+    // @Description: Current measured by external current sensor.
+    // @Units: A
+    // @Range: 0 30
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("CURRENT_TOTAL", 49, ParametersG2, current_total, 0.0f),
+
+    // @Param: RUDDER_CURRENT
+    // @DisplayName: Rudder current
+    // @Description: Current measured by rudder current sensor.
+    // @Units: A
+    // @Range: 0 30
+    // @Increment: 0.1
+    // @User: Advanced
+    AP_GROUPINFO("RUDDER_CURRENT", 50, ParametersG2, rudder_current, 0.0f),
+
+    // @Param: SAIL_CURRENT
+    // @DisplayName: Sail current
+    // @Description: Current measured by sail current sensor.
+    // @Units: A
+    // @Range: 0 30
+    // @Increment: 0.1
+    // @User: Advanced
+    AP_GROUPINFO("SAIL_CURRENT", 51, ParametersG2, sail_current, 0.0f),
+
+    // @Param: RUDDER_ANGLE
+    // @DisplayName: Rudder angle
+    // @Description: Current rudder position measured by potentiometer.
+    // @Units: Deg
+    // @Range: -90 90
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("RUDDER_ANGLE", 52, ParametersG2, rudder_angle, 0.0f),
+
+    // @Param: SAIL_ANGLE
+    // @DisplayName: Sail angle
+    // @Description: Current sail position measured by potentiometer.
+    // @Units: Deg
+    // @Range: 0 90
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("SAIL_ANGLE", 53, ParametersG2, sail_angle, 0.0f),
+
+    // @Param: RUDDER_MOTOR
+    // @DisplayName: Rudder motor
+    // @Description: Rudder motor speed command.
+    // @Units: pwm
+    // @Range: -400 400
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("RUDDER_MOTOR", 54, ParametersG2, rudder_motor, 0.0f),
+
+    // @Param: SAIL_MOTOR
+    // @DisplayName: Sail motor
+    // @Description: Sail motor speed command.
+    // @Units: pwm
+    // @Range: -400 400
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("SAIL_MOTOR", 55, ParametersG2, sail_motor, 0.0f),
+
+
     AP_GROUPEND
 };
 

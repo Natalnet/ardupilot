@@ -2,6 +2,7 @@
 
 #include "AP_BattMonitor.h"
 #include "AP_BattMonitor_Backend.h"
+//#include "Rover.h"
 
 // default pins and dividers
 #if defined(HAL_BATT_VOLT_PIN)
@@ -93,8 +94,11 @@ public:
 
     void init(void) override {}
 
+    void set_current_external(float current_external);
+
 protected:
 
     AP_HAL::AnalogSource *_volt_pin_analog_source;
     AP_HAL::AnalogSource *_curr_pin_analog_source;
+
 };

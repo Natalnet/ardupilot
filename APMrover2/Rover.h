@@ -380,6 +380,7 @@ private:
     void read_rangefinders(void);
     void read_airspeed();
     void rpm_update(void);
+    void current_update(void);
 
     // Steering.cpp
     void set_servos(void);

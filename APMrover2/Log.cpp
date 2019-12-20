@@ -132,13 +132,70 @@ void Rover::Log_Write_Sail()
     float wind_dir_rel = logger.quiet_nanf();
     float wind_speed_true = logger.quiet_nanf();
     float wind_speed_apparent = logger.quiet_nanf();
+    float current_total = logger.quiet_nanf();
+    
     if (rover.g2.windvane.enabled()) {
         wind_dir_abs = degrees(g2.windvane.get_true_wind_direction_rad());
         wind_dir_rel = degrees(g2.windvane.get_apparent_wind_direction_rad());
         wind_speed_true = g2.windvane.get_true_wind_speed();
         wind_speed_apparent = g2.windvane.get_apparent_wind_speed();
     }
+    
+    current_total = g2.rudder_current + g2.sail_current;
+    
     logger.Write("SAIL", "TimeUS,WindDirTrue,WindDirApp,WindSpdTrue,WindSpdApp,SailOut,VMG",
+                    "shhhnn%n", "F0000000", "Qfffffff",
+                    AP_HAL::micros64(),
+                    (double)wind_dir_abs,
+                    (double)wind_dir_rel,
+                    (double)wind_speed_true,
+                    (double)wind_speed_apparent,
+                    (double)g2.motors.get_mainsail(),
+                    (double)g2.sailboat.get_VMG());
+
+    logger.Write("NEW", "TimeUS,RudCur,RudAng,RudMot,SailCur,SailAng,SailMot,TotCur",
+                "sddddddd", "F00000000", "Qffffffff",
+                AP_HAL::micros64(),
+                (double)g2.rudder_current,
+                (double)g2.rudder_angle,
+                (double)g2.rudder_motor,
+                (double)g2.sail_current,
+                (double)g2.sail_angle,
+                (double)g2.sail_motor,
+                (double)current_total);
+
+    /*logger.Write("NEW", "TimeUS,RudderCurr,RudderAngle,RudderMotor,SailCurrent,SailAngle,SailMotor",
+                    "shhhhhh", "F000000", "Qffffff",
+                    AP_HAL::micros64(),
+                    (double)g2.rudder_current,
+                    (double)g2.rudder_angle,
+                    (double)g2.rudder_motor,
+                    (double)g2.sail_current,
+                    (double)g2.sail_angle,
+                    (double)g2.rudder_motor);
+                    */
+}
+
+/*
+logger.Write("SAIL", "TimeUS,WindDirTrue,WindDirApp,WindSpdTrue,WindSpdApp,SailOut,VMG,RudderCurr,RudderAngle,RudderMotor,SailCurrent,SailAngle,SailMotor,TotalCurr",
+                        "shhnn%nnnnnnn", "F000000000000", "Qffffffffffff",
+                        AP_HAL::micros64(),
+                        (double)wind_dir_abs,
+                        (double)wind_dir_rel,
+                        (double)wind_speed_true,
+                        (double)wind_speed_apparent,
+                        (double)g2.motors.get_mainsail(),
+                        (double)g2.sailboat.get_VMG(),
+                        (double)g2.rudder_current,
+                        (double)g2.rudder_angle,
+                        (double)g2.rudder_motor,
+                        (double)g2.sail_current,
+                        (double)g2.sail_angle,
+                        (double)g2.sail_motor,
+                        (double)current_total);
+*/
+
+/*    logger.Write("SAIL", "TimeUS,WindDirTrue,WindDirApp,WindSpdTrue,WindSpdApp,SailOut,VMG",
                         "shhnn%n", "F000000", "Qffffff",
                         AP_HAL::micros64(),
                         (double)wind_dir_abs,
@@ -147,7 +204,18 @@ void Rover::Log_Write_Sail()
                         (double)wind_speed_apparent,
                         (double)g2.motors.get_mainsail(),
                         (double)g2.sailboat.get_VMG());
-}
+}*/
+
+/*    logger.Write("SAIL", "TimeUS,WindDirTrue,WindDirApp,WindSpdTrue,WindSpdApp,SailOut,VMG",
+                        "shhnn%n", "F000000", "Qffffff",
+                        AP_HAL::micros64(),
+                        (double)wind_dir_abs,
+                        (double)wind_dir_rel,
+                        (double)wind_speed_true,
+                        (double)wind_speed_apparent,
+                        (double)g2.motors.get_mainsail(),
+                        (double)g2.sailboat.get_VMG());
+}*/
 
 struct PACKED log_Steering {
     LOG_PACKET_HEADER;

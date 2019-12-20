@@ -398,6 +398,28 @@ public:
 
     // FS options
     AP_Int32 fs_options;
+
+    // total current of the system
+    AP_Float current_total;
+
+    // current of rudder motor
+    AP_Float rudder_current;
+
+    // current of sailboat motor
+    AP_Float sail_current;
+
+    // angle of rudder
+    AP_Float rudder_angle;
+
+    // angle of sail
+    AP_Float sail_angle;
+
+    // rudder motor speed
+    AP_Float rudder_motor;
+
+    // sail motor speed
+    AP_Float sail_motor;
+
 };
 
 extern const AP_Param::Info var_info[];

@@ -504,6 +504,11 @@ bool AP_BattMonitor::reset_remaining(uint16_t battery_mask, float percentage)
     return ret;
 }
 
+/// current value sent by external sensor 
+void AP_BattMonitor::set_current_external(float _current_external_tmp){
+    _current_external = _current_external_tmp;
+}
+
 namespace AP {
 
 AP_BattMonitor &battery()
