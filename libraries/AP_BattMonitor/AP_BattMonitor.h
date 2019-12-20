@@ -171,12 +171,17 @@ public:
     // reset battery remaining percentage
     bool reset_remaining(uint16_t battery_mask, float percentage);
 
+    // set external current value
+    void set_current_external(float current_external);
+
     static const struct AP_Param::GroupInfo var_info[];
 
 protected:
 
     /// parameters
     AP_BattMonitor_Params _params[AP_BATT_MONITOR_MAX_INSTANCES];
+
+    float _current_external = 0;
 
 private:
     static AP_BattMonitor *_singleton;

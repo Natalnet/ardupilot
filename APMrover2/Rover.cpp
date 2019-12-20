@@ -300,6 +300,7 @@ void Rover::one_second_loop(void)
 
 void Rover::update_GPS(void)
 {
+
     gps.update();
     if (gps.last_message_time_ms() != last_gps_msg_ms) {
         last_gps_msg_ms = gps.last_message_time_ms();
@@ -308,6 +309,10 @@ void Rover::update_GPS(void)
         camera.update();
 #endif
     }
+
+    g2.current_total = g2.sail_current + g2.rudder_current;
+    //out of place but i didnt know were to put it :(
+    battery.set_current_external(g2.current_total);
 }
 
 void Rover::update_current_mode(void)
