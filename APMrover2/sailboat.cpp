@@ -104,6 +104,24 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("LOIT_RADIUS", 9, Sailboat, loit_radius, 5),
 
+    // @Param: SAIL_CTRL
+    // @DisplayName: Sail control type
+    // @Description: Type of sail control for the sailboat. 0- standard, 1- fixed angle
+    // @Units: int
+    // @Range: 0 - 10
+    // @Increment: 1
+    // @User: Standard
+    AP_GROUPINFO("PROP_CTRL", 10, Sailboat, sail_control_type, 0),
+
+    // @Param: SAIL_FIXED_ANGLE
+    // @DisplayName: Sail fixed angle
+    // @Description: Sail angle for fixed sail control.
+    // @Units: degrees
+    // @Range: 0 90
+    // @Increment: 0.1
+    // @User: Standard
+    AP_GROUPINFO("FIXED_ANGLE", 11, Sailboat, sail_fixed_angle, 0.0f),
+
     AP_GROUPEND
 };
 
@@ -214,23 +232,53 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
     if (motor_state == UseMotor::USE_MOTOR_ALWAYS || !is_positive(desired_speed)) {
         mainsail_out = 100.0f;
     } else {
-        // + is wind over starboard side, - is wind over port side, but as the sails are sheeted the same on each side it makes no difference so take abs
-        float wind_dir_apparent = fabsf(rover.g2.windvane.get_apparent_wind_direction_rad());
-        wind_dir_apparent = degrees(wind_dir_apparent);
+    	switch (sail_control_type) {
 
-        // set the main sail to the ideal angle to the wind
-        float mainsail_angle = wind_dir_apparent -sail_angle_ideal;
+    		// standard linear control
+    		case (LINEAR): {
 
-        // make sure between allowable range
-        mainsail_angle = constrain_float(mainsail_angle,sail_angle_min, sail_angle_max);
+    			// + is wind over starboard side, - is wind over port side, but as the sails are sheeted the same on each side it makes no difference so take abs
+		        float wind_dir_apparent = fabsf(rover.g2.windvane.get_apparent_wind_direction_rad());
+		        wind_dir_apparent = degrees(wind_dir_apparent);
 
-        // linear interpolate mainsail value (0 to 100) from wind angle mainsail_angle
-        float mainsail_base = linear_interpolate(0.0f, 100.0f, mainsail_angle,sail_angle_min,sail_angle_max);
+		        // set the main sail to the ideal angle to the wind
+		        float mainsail_angle = wind_dir_apparent - sail_angle_ideal;
 
-        // use PID controller to sheet out
-        const float pid_offset = rover.g2.attitude_control.get_sail_out_from_heel(radians(sail_heel_angle_max), rover.G_Dt) * 100.0f;
+		        // make sure between allowable range
+		        mainsail_angle = constrain_float(mainsail_angle,sail_angle_min, sail_angle_max);
 
-        mainsail_out = constrain_float((mainsail_base + pid_offset), 0.0f ,100.0f);
+		        // linear interpolate mainsail value (0 to 100) from wind angle mainsail_angle
+		        float mainsail_base = linear_interpolate(0.0f, 100.0f, mainsail_angle,sail_angle_min,sail_angle_max);
+
+		        // use PID controller to sheet out
+		        const float pid_offset = rover.g2.attitude_control.get_sail_out_from_heel(radians(sail_heel_angle_max), rover.G_Dt) * 100.0f;
+
+		        mainsail_out = constrain_float((mainsail_base + pid_offset), 0.0f ,100.0f);
+    			break;
+    		}
+
+    		// fixed angle for sail control
+    		// PARAMS: SAIL_FIXED_ANGLE
+    		case (FIXED): {
+    			mainsail_out = linear_interpolate(0.0f, 100.0f, sail_fixed_angle, sail_angle_min, sail_angle_max);
+    			break;
+    		}
+
+    		//TODO: use a cardioid function to approximate the polar diagram. speed control trying to get the speed given by the polar diagram
+    		case (POLAR_DIAGRAM_CARD): {
+    			break;
+    		}
+
+    		//TODO: use the real polar diagram
+    		case (POLAR_DIAGRAM_REAL): {
+    			break;
+    		}
+
+    		//TODO: no need for polar diagram. sucessive changes on sail angle to get 
+    		case (EXTREMUM_SEEKING): {
+    			break;
+    		}
+    	}
     }
 }
 

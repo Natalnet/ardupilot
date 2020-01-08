@@ -73,6 +73,15 @@ public:
         USE_MOTOR_ALWAYS = 2
     };
 
+    // states of SAIL_CONTROL_TYPE parameter and sail_control_type variable
+    enum SailControlType : uint8_t {
+        LINEAR  = 0,
+        FIXED = 1,
+        POLAR_DIAGRAM_CARD = 2,
+        POLAR_DIAGRAM_REAL = 3,
+        EXTREMUM_SEEKING = 4
+    };
+
     // set state of motor
     // if report_failure is true a message will be sent to all GCSs
     void set_motor_state(UseMotor state, bool report_failure = true);
@@ -101,6 +110,8 @@ private:
     AP_Float sail_windspeed_min;
     AP_Float xtrack_max;
     AP_Float loit_radius;
+    AP_Int8 sail_control_type;
+    AP_Float sail_fixed_angle;
 
     RC_Channel *channel_mainsail;   // rc input channel for controlling mainsail
     bool currently_tacking;         // true when sailboat is in the process of tacking to a new heading
