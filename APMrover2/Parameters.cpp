@@ -632,6 +632,15 @@ const AP_Param::GroupInfo ParametersG2::var_info[] = {
     // @User: Advanced
     AP_GROUPINFO("FS_OPTIONS", 48, ParametersG2, fs_options, 0),
 
+    // @Param: CURRENT_EXTERNAL
+    // @DisplayName: Current External
+    // @Description: Current measured by external current sensor.
+    // @Units: A
+    // @Range: 0 30
+    // @Increment: 1
+    // @User: Advanced
+    AP_GROUPINFO("CURRENT_TOTAL", 49, ParametersG2, current_total, 0.0f),
+
     AP_GROUPEND
 };
 

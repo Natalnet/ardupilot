@@ -400,6 +400,9 @@ public:
 
     // FS options
     AP_Int32 fs_options;
+
+    // total current
+    AP_Float current_total;
 };
 
 extern const AP_Param::Info var_info[];
