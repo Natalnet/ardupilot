@@ -112,6 +112,9 @@ private:
     AP_Float loit_radius;
     AP_Int8 sail_control_type;
     AP_Float sail_fixed_angle;
+    AP_Float sail_speed_max;
+    AP_Float sail_extr_step;
+    AP_Float sail_extr_t;
 
     RC_Channel *channel_mainsail;   // rc input channel for controlling mainsail
     bool currently_tacking;         // true when sailboat is in the process of tacking to a new heading
@@ -121,4 +124,9 @@ private:
     uint32_t tack_clear_ms;         // system time when tack was cleared
     bool tack_assist;               // true if we should use some throttle to assist tack
     UseMotor motor_state;           // current state of motor output
+
+    float _speed_last = 0.0f;
+    float _sail_last = 0.0f;
+    float _sail_last_last = 0.0f;
+    float _extr_turn_last_ms = 0.0f;
 };

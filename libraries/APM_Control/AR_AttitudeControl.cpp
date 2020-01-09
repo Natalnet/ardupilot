@@ -335,6 +335,68 @@ const AP_Param::GroupInfo AR_AttitudeControl::var_info[] = {
     // @User: Standard
     AP_SUBGROUPINFO(_sailboat_heel_pid, "_SAIL_", 12, AR_AttitudeControl, AC_PID),
 
+
+    // @Param: _SAILSPD_P
+    // @DisplayName: Sail Speed control P gain
+    // @Description: Sail Speed control P gain for sailboats.  Converts the error between the desired heel angle (in radians) and actual heel to a main sail output (in the range -1 to +1)
+    // @Range: 0.000 2.000
+    // @Increment: 0.01
+    // @User: Standard
+
+    // @Param: _SAILSPD_I
+    // @DisplayName: Sail Speed control I gain
+    // @Description: Sail Speed control I gain for sailboats.  Corrects long term error between the desired heel angle (in radians) and actual
+    // @Range: 0.000 2.000
+    // @User: Standard
+
+    // @Param: _SAILSPD_IMAX
+    // @DisplayName: Sail Speed control I gain maximum
+    // @Description: Sail Speed control I gain maximum.  Constrains the maximum I term contribution to the main sail output (range -1 to +1)
+    // @Range: 0.000 1.000
+    // @Increment: 0.01
+    // @User: Standard
+
+    // @Param: _SAILSPD_D
+    // @DisplayName: Sail Speed control D gain
+    // @Description: Sail Speed control D gain.  Compensates for short-term change in desired heel angle vs actual
+    // @Range: 0.000 0.100
+    // @Increment: 0.001
+    // @User: Standard
+
+    // @Param: _SAILSPD_FF
+    // @DisplayName: Sail Speed control feed forward
+    // @Description: Sail Speed control feed forward
+    // @Range: 0.000 0.500
+    // @Increment: 0.001
+    // @User: Standard
+
+    // @Param: _SAILSPD_FILT
+    // @DisplayName: Sail Speed control filter frequency
+    // @Description: Sail Speed control input filter.  Lower values reduce noise but add delay.
+    // @Range: 0.000 100.000
+    // @Increment: 0.1
+    // @Units: Hz
+    // @User: Standard
+
+    // @Param: _SAILSPD_FLTT
+    // @DisplayName: Sail Speed Target filter frequency in Hz
+    // @Description: Target filter frequency in Hz
+    // @Units: Hz
+    // @User: Standard
+
+    // @Param: _SAILSPD_FLTE
+    // @DisplayName: Sail Speed Error filter frequency in Hz
+    // @Description: Error filter frequency in Hz
+    // @Units: Hz
+    // @User: Standard
+
+    // @Param: _SAILSPD_FLTD
+    // @DisplayName: Sail Speed Derivative term filter frequency in Hz
+    // @Description: Derivative filter frequency in Hz
+    // @Units: Hz
+    // @User: Standard
+    AP_SUBGROUPINFO(_sailboat_speed_pid, "_SAILSPD_", 13, AR_AttitudeControl, AC_PID),
+
     AP_GROUPEND
 };
 
@@ -344,7 +406,8 @@ AR_AttitudeControl::AR_AttitudeControl(AP_AHRS &ahrs) :
     _steer_rate_pid(AR_ATTCONTROL_STEER_RATE_P, AR_ATTCONTROL_STEER_RATE_I, AR_ATTCONTROL_STEER_RATE_D, AR_ATTCONTROL_STEER_RATE_FF, AR_ATTCONTROL_STEER_RATE_IMAX, 0.0f, AR_ATTCONTROL_STEER_RATE_FILT, 0.0f, AR_ATTCONTROL_DT),
     _throttle_speed_pid(AR_ATTCONTROL_THR_SPEED_P, AR_ATTCONTROL_THR_SPEED_I, AR_ATTCONTROL_THR_SPEED_D, 0.0f, AR_ATTCONTROL_THR_SPEED_IMAX, 0.0f, AR_ATTCONTROL_THR_SPEED_FILT, 0.0f, AR_ATTCONTROL_DT),
     _pitch_to_throttle_pid(AR_ATTCONTROL_PITCH_THR_P, AR_ATTCONTROL_PITCH_THR_I, AR_ATTCONTROL_PITCH_THR_D, 0.0f, AR_ATTCONTROL_PITCH_THR_IMAX, 0.0f, AR_ATTCONTROL_PITCH_THR_FILT, 0.0f, AR_ATTCONTROL_DT),
-    _sailboat_heel_pid(AR_ATTCONTROL_HEEL_SAIL_P, AR_ATTCONTROL_HEEL_SAIL_I, AR_ATTCONTROL_HEEL_SAIL_D, 0.0f, AR_ATTCONTROL_HEEL_SAIL_IMAX, 0.0f, AR_ATTCONTROL_HEEL_SAIL_FILT, 0.0f, AR_ATTCONTROL_DT)
+    _sailboat_heel_pid(AR_ATTCONTROL_HEEL_SAIL_P, AR_ATTCONTROL_HEEL_SAIL_I, AR_ATTCONTROL_HEEL_SAIL_D, 0.0f, AR_ATTCONTROL_HEEL_SAIL_IMAX, 0.0f, AR_ATTCONTROL_HEEL_SAIL_FILT, 0.0f, AR_ATTCONTROL_DT),
+    _sailboat_speed_pid(AR_ATTCONTROL_SPEED_SAIL_P, AR_ATTCONTROL_SPEED_SAIL_I, AR_ATTCONTROL_SPEED_SAIL_D, 0.0f, AR_ATTCONTROL_SPEED_SAIL_IMAX, 0.0f, AR_ATTCONTROL_SPEED_SAIL_FILT, 0.0f, AR_ATTCONTROL_DT)
     {
     AP_Param::setup_object_defaults(this, var_info);
 }
@@ -664,6 +727,58 @@ float AR_AttitudeControl::get_sail_out_from_heel(float desired_heel, float dt)
 
     // constrain and return final output
     return (ff + p + i + d) * -1.0f;
+}
+
+// return a sail output from -1 to +1 given a desired speed in m/s (use negative speeds to travel backwards)
+float AR_AttitudeControl::get_sail_out_from_speed(float desired_speed, float dt)
+{
+    // sanity check dt
+    dt = constrain_float(dt, 0.0f, 1.0f);
+
+    // get speed forward
+    float speed;
+    if (!get_forward_speed(speed)) {
+        // we expect caller will not try to control heading using rate control without a valid speed estimate
+        // on failure to get speed we do not attempt to steer
+        return 0.0f;
+    }
+
+    // if not called recently, reset input filter and desired speed to actual speed (used for accel limiting)
+    if (!speed_control_active()) {
+        _sailboat_speed_pid.reset_filter();
+        _sailboat_speed_pid.reset_I();
+        _desired_speed = speed;
+    }
+    _speed_last_ms = AP_HAL::millis();
+
+    // acceleration limit desired speed
+    _desired_speed = get_desired_speed_accel_limited(desired_speed, dt);
+
+    // set PID's dt
+    _sailboat_speed_pid.set_dt(dt);
+
+    float sail_out = _sailboat_speed_pid.update_all(desired_speed, speed, (_throttle_limit_low || _throttle_limit_high));
+
+    sail_out += _sailboat_speed_pid.get_ff();
+
+    // clear local limit flags used to stop i-term build-up as we stop reversed outputs going to motors
+    _throttle_limit_low = false;
+    _throttle_limit_high = false;
+
+    // protect against reverse output being sent to the motors unless braking has been enabled
+    if (!_brake_enable) {
+        // if both desired speed and actual speed are positive, do not allow negative values
+        if ((desired_speed >= 0.0f) && (sail_out <= 0.0f)) {
+            sail_out = 0.0f;
+            _throttle_limit_low = true;
+        } else if ((desired_speed <= 0.0f) && (sail_out >= 0.0f)) {
+            sail_out = 0.0f;
+            _throttle_limit_high = true;
+        }
+    }
+
+    // constrain and return final output
+    return sail_out * -1.0f;
 }
 
 // get forward speed in m/s (earth-frame horizontal velocity but only along vehicle x-axis).  returns true on success

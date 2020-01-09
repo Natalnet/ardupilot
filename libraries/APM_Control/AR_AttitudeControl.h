@@ -33,6 +33,11 @@
 #define AR_ATTCONTROL_HEEL_SAIL_D       0.0f
 #define AR_ATTCONTROL_HEEL_SAIL_IMAX    1.0f
 #define AR_ATTCONTROL_HEEL_SAIL_FILT    10.0f
+#define AR_ATTCONTROL_SPEED_SAIL_P       1.0f
+#define AR_ATTCONTROL_SPEED_SAIL_I       0.1f
+#define AR_ATTCONTROL_SPEED_SAIL_D       0.0f
+#define AR_ATTCONTROL_SPEED_SAIL_IMAX    1.0f
+#define AR_ATTCONTROL_SPEED_SAIL_FILT    10.0f
 #define AR_ATTCONTROL_DT                0.02f
 
 // throttle/speed control maximum acceleration/deceleration (in m/s) (_ACCEL_MAX parameter default)
@@ -115,12 +120,16 @@ public:
     // Sailboat heel(roll) angle contorller, release sail to keep at maximum heel angle
     float get_sail_out_from_heel(float desired_heel, float dt);
 
+    // Sailboat speed controller, tries to get max sailboat speed given by polar diagram
+    float get_sail_out_from_speed(float desired_speed, float dt);
+
     // low level control accessors for reporting and logging
     AC_P& get_steering_angle_p() { return _steer_angle_p; }
     AC_PID& get_steering_rate_pid() { return _steer_rate_pid; }
     AC_PID& get_throttle_speed_pid() { return _throttle_speed_pid; }
     AC_PID& get_pitch_to_throttle_pid() { return _pitch_to_throttle_pid; }
     AC_PID& get_sailboat_heel_pid() { return _sailboat_heel_pid; }
+    AC_PID& get_sailboat_speed_pid() { return _sailboat_speed_pid; }
 
     // get forward speed in m/s (earth-frame horizontal velocity but only along vehicle x-axis).  returns true on success
     bool get_forward_speed(float &speed) const;
@@ -187,4 +196,8 @@ private:
     // Sailboat heel control
     AC_PID   _sailboat_heel_pid;    // Sailboat heel angle pid controller
     uint32_t _heel_controller_last_ms = 0;
+
+    // Sailboat speed control
+    AC_PID   _sailboat_speed_pid;    // Sailboat heel angle pid controller
+    uint32_t _speed_controller_last_ms = 0;
 };

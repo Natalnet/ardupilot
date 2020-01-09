@@ -104,7 +104,7 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("LOIT_RADIUS", 9, Sailboat, loit_radius, 5),
 
-    // @Param: SAIL_CTRL
+    // @Param: PROP_CTRL
     // @DisplayName: Sail control type
     // @Description: Type of sail control for the sailboat. 0- standard, 1- fixed angle
     // @Units: int
@@ -113,7 +113,7 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("PROP_CTRL", 10, Sailboat, sail_control_type, 0),
 
-    // @Param: SAIL_FIXED_ANGLE
+    // @Param: FIXED_ANGLE
     // @DisplayName: Sail fixed angle
     // @Description: Sail angle for fixed sail control.
     // @Units: degrees
@@ -121,6 +121,33 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @Increment: 0.1
     // @User: Standard
     AP_GROUPINFO("FIXED_ANGLE", 11, Sailboat, sail_fixed_angle, 0.0f),
+
+    // @Param: SPEED_MAX
+    // @DisplayName: Sailing max speed
+    // @Description: Referece speed for speed control of sailboat.
+    // @Units: degrees
+    // @Range: 0 10
+    // @Increment: 0.1
+    // @User: Standard
+    AP_GROUPINFO("SPEED_MAX", 12, Sailboat, sail_speed_max, 0.0f),
+
+    // @Param: EXTR_STEP
+    // @DisplayName: Sailing max speed
+    // @Description: Referece speed for speed control of sailboat.
+    // @Units: degrees
+    // @Range: 0 50
+    // @Increment: 0.1
+    // @User: Standard
+    AP_GROUPINFO("EXTR_STEP", 13, Sailboat, sail_extr_step, 5.0f),
+
+    // @Param: EXTR_T
+    // @DisplayName: Sailing max speed
+    // @Description: Referece speed for speed control of sailboat.
+    // @Units: degrees
+    // @Range: 0 10
+    // @Increment: 0.1
+    // @User: Standard
+    AP_GROUPINFO("EXTR_T", 14, Sailboat, sail_extr_t, 1.0f),
 
     AP_GROUPEND
 };
@@ -266,16 +293,83 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
 
     		//TODO: use a cardioid function to approximate the polar diagram. speed control trying to get the speed given by the polar diagram
     		case (POLAR_DIAGRAM_CARD): {
+
+                // + is wind over starboard side, - is wind over port side, but as the sails are sheeted the same on each side it makes no difference so take abs
+                float wind_dir_apparent = fabsf(rover.g2.windvane.get_apparent_wind_direction_rad());
+                wind_dir_apparent = degrees(wind_dir_apparent);
+
+                // set the main sail to the ideal angle to the wind
+                float mainsail_angle = wind_dir_apparent - sail_angle_ideal;
+
+                // make sure between allowable range
+                mainsail_angle = constrain_float(mainsail_angle,sail_angle_min, sail_angle_max);
+
+                // linear interpolate mainsail value (0 to 100) from wind angle mainsail_angle
+                float mainsail_base = linear_interpolate(0.0f, 100.0f, mainsail_angle,sail_angle_min,sail_angle_max);
+
+                // use PID controller to sheet out
+                const float pid_offset_heel = rover.g2.attitude_control.get_sail_out_from_heel(radians(sail_heel_angle_max), rover.G_Dt) * 100.0f;
+
+                // use PID controller to achieve max speed
+                const float pid_offset_speed = rover.g2.attitude_control.get_sail_out_from_speed(sail_speed_max, rover.G_Dt) * 100.0f;
+
+                mainsail_out = constrain_float((mainsail_base + pid_offset_heel + pid_offset_speed), 0.0f ,100.0f);
     			break;
     		}
 
-    		//TODO: use the real polar diagram
+    		// TODO: use the real polar diagram
     		case (POLAR_DIAGRAM_REAL): {
     			break;
     		}
 
-    		//TODO: no need for polar diagram. sucessive changes on sail angle to get 
+    		// TODO: no need for polar diagram. sucessive changes on sail angle to search for maximum speed
     		case (EXTREMUM_SEEKING): {
+
+                // get current time
+                float now = AP_HAL::millis();
+                float T = sail_extr_t*1000;
+
+                // check if its time to change
+                if ((now - _extr_turn_last_ms) >= T){
+
+                    float speed;
+                    if (!rover.g2.attitude_control.get_forward_speed(speed)) {
+                        speed = 0.0f;
+                    }
+
+                    //gcs().send_text(MAV_SEVERITY_INFO, "Time elapsed! %5.3f", (double)(now - _extr_turn_last_ms));
+                    //gcs().send_text(MAV_SEVERITY_INFO, "T = %5.3f", (double)(T));
+
+                    float du = speed - _speed_last;
+                    float ds = _sail_last - _sail_last_last;
+
+                    float _sail_extr_step = linear_interpolate(0.0f, 100.0f, sail_extr_step, sail_angle_min, sail_angle_max);
+
+                    gcs().send_text(MAV_SEVERITY_INFO, "sail step to throttle = %5.3f", (double)_sail_extr_step);
+
+                    float step = _sail_extr_step * copysign(1.0, du) * copysign(1.0, ds);
+
+                    // (du/(abs(du)) is the sign of du
+                    float mainsail_out_tmp = _sail_last + step;
+
+                    //gcs().send_text(MAV_SEVERITY_INFO, "MAINSAIL = %5.3f", (double)mainsail_out_tmp);
+                    //gcs().send_text(MAV_SEVERITY_INFO, "DS = %5.3f", (double)copysign(1.0, ds));
+
+                    mainsail_out = constrain_float((mainsail_out_tmp), 0.0f ,100.0f);
+
+                    // // update sail and speed from last steps
+                     _speed_last = speed;
+
+                     _sail_last_last = _sail_last;
+                     _sail_last = mainsail_out;
+
+                     _extr_turn_last_ms = now;
+
+                } else {
+                    // keep same sail angle
+                    mainsail_out = constrain_float((_sail_last), 0.0f ,100.0f);
+                }
+
     			break;
     		}
     	}

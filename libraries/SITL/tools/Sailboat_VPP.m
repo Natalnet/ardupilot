@@ -44,7 +44,7 @@ ylabel('Cd')
 %% VPP
 % Do for range of sailing angles and wind speeds, increse speed until foward force equals zero
 wind_speed = 3:2:15; % m/s
-heading = 0:1:179; % deg
+heading = 0:1:359; % deg
 speed_step = 0.01; % m/s
 
 for n = 1:length(wind_speed)
