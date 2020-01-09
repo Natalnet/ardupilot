@@ -115,6 +115,7 @@ private:
     AP_Float sail_speed_max;
     AP_Float sail_extr_step;
     AP_Float sail_extr_t;
+    AP_Float sail_polar_t;
 
     RC_Channel *channel_mainsail;   // rc input channel for controlling mainsail
     bool currently_tacking;         // true when sailboat is in the process of tacking to a new heading
@@ -129,4 +130,6 @@ private:
     float _sail_last = 0.0f;
     float _sail_last_last = 0.0f;
     float _extr_turn_last_ms = 0.0f;
+    float _polar_turn_last_ms = 0.0f;
+    float _pid_offset_speed = 0.0f;
 };

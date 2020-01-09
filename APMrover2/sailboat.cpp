@@ -149,6 +149,15 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("EXTR_T", 14, Sailboat, sail_extr_t, 1.0f),
 
+    // @Param: POLAR_T
+    // @DisplayName: Sailing max speed
+    // @Description: Referece speed for speed control of sailboat.
+    // @Units: degrees
+    // @Range: 0 10
+    // @Increment: 0.1
+    // @User: Standard
+    AP_GROUPINFO("POLAR_T", 15, Sailboat, sail_polar_t, 1.0f),
+
     AP_GROUPEND
 };
 
@@ -294,6 +303,12 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
     		//TODO: use a cardioid function to approximate the polar diagram. speed control trying to get the speed given by the polar diagram
     		case (POLAR_DIAGRAM_CARD): {
 
+                // get current time
+                float now = AP_HAL::millis();
+
+                // time constant off sailboat
+                float T = sail_polar_t*1000;
+
                 // + is wind over starboard side, - is wind over port side, but as the sails are sheeted the same on each side it makes no difference so take abs
                 float wind_dir_apparent = fabsf(rover.g2.windvane.get_apparent_wind_direction_rad());
                 wind_dir_apparent = degrees(wind_dir_apparent);
@@ -310,12 +325,48 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
                 // use PID controller to sheet out
                 const float pid_offset_heel = rover.g2.attitude_control.get_sail_out_from_heel(radians(sail_heel_angle_max), rover.G_Dt) * 100.0f;
 
-                // use PID controller to achieve max speed
-                const float pid_offset_speed = rover.g2.attitude_control.get_sail_out_from_speed(sail_speed_max, rover.G_Dt) * 100.0f;
+                mainsail_out = constrain_float((mainsail_base + pid_offset_heel + _pid_offset_speed), 0.0f ,100.0f);
 
-                mainsail_out = constrain_float((mainsail_base + pid_offset_heel + pid_offset_speed), 0.0f ,100.0f);
+                // update pid speed
+                if ((now - _polar_turn_last_ms) >= T) {
+
+                    float speed;
+                    if (!rover.g2.attitude_control.get_forward_speed(speed)) {
+                        speed = 0.0f;
+                    }
+
+                    // calc first difference of speed and sail angle
+                    float du = speed - _speed_last;
+                    float ds = _sail_last - _sail_last_last;
+
+                    // use PID controller to achieve max speed
+                    const float pid_offset_speed = rover.g2.attitude_control.get_sail_out_from_speed(sail_speed_max, T);
+
+                    // specific control heuristic for sailboat
+                    if ((du < 0 && ds < 0) || (du > 0 && ds > 0)){
+                        _pid_offset_speed = _pid_offset_speed + fabsf(pid_offset_speed);
+                    } else {
+                        _pid_offset_speed = _pid_offset_speed + fabsf(pid_offset_speed) * -1.0f;
+                    }
+
+                    // constrain control output so it dosent explode (convergence not garanteed)
+                    _pid_offset_speed = constrain_float(_pid_offset_speed, -10.0f ,10.0f);
+
+                    gcs().send_text(MAV_SEVERITY_INFO, "CONTROL SIGNAL ACC = %5.3f", (double)_pid_offset_speed);
+
+                    // update speed of last step
+                    _speed_last = speed;
+
+                    // update sail angle of last steps and the latter step
+                    _sail_last_last = _sail_last;
+                    _sail_last = mainsail_out;
+
+                    // update time of last step
+                    _polar_turn_last_ms = now;
+                }
+
     			break;
-    		}
+            }
 
     		// TODO: use the real polar diagram to give reference speed.
     		case (POLAR_DIAGRAM_REAL): {
@@ -621,3 +672,4 @@ bool Sailboat::motor_assist_low_wind() const
             rover.g2.windvane.wind_speed_enabled() &&
             (rover.g2.windvane.get_true_wind_speed() < sail_windspeed_min));
 }
+
