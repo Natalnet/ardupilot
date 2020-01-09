@@ -317,12 +317,12 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
     			break;
     		}
 
-    		// TODO: use the real polar diagram
+    		// TODO: use the real polar diagram to give reference speed.
     		case (POLAR_DIAGRAM_REAL): {
     			break;
     		}
 
-    		// TODO: no need for polar diagram. sucessive changes on sail angle to search for maximum speed
+    		// No need for polar diagram. perform sucessive changes on sail angle to search for maximum speed.
     		case (EXTREMUM_SEEKING): {
 
                 // get current time
@@ -337,36 +337,32 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
                         speed = 0.0f;
                     }
 
-                    //gcs().send_text(MAV_SEVERITY_INFO, "Time elapsed! %5.3f", (double)(now - _extr_turn_last_ms));
-                    //gcs().send_text(MAV_SEVERITY_INFO, "T = %5.3f", (double)(T));
-
+                    // calc first difference of speed and sail angle
                     float du = speed - _speed_last;
                     float ds = _sail_last - _sail_last_last;
 
+                    // translate sail degrees (0 - 90) to output (0 - 100)
                     float _sail_extr_step = linear_interpolate(0.0f, 100.0f, sail_extr_step, sail_angle_min, sail_angle_max);
 
-                    gcs().send_text(MAV_SEVERITY_INFO, "sail step to throttle = %5.3f", (double)_sail_extr_step);
+                    // calc next sail angle step
+                    float step = _sail_extr_step * copysign(1.0f, du) * copysign(1.0f, ds);
 
-                    float step = _sail_extr_step * copysign(1.0, du) * copysign(1.0, ds);
+                    // no heeling control ATM
+                    mainsail_out = constrain_float((_sail_last + step), 0.0f ,100.0f);
 
-                    // (du/(abs(du)) is the sign of du
-                    float mainsail_out_tmp = _sail_last + step;
-
-                    //gcs().send_text(MAV_SEVERITY_INFO, "MAINSAIL = %5.3f", (double)mainsail_out_tmp);
-                    //gcs().send_text(MAV_SEVERITY_INFO, "DS = %5.3f", (double)copysign(1.0, ds));
-
-                    mainsail_out = constrain_float((mainsail_out_tmp), 0.0f ,100.0f);
-
-                    // // update sail and speed from last steps
+                    // update speed of last step
                      _speed_last = speed;
 
+                     // update sail angle of last steps and the latter step
                      _sail_last_last = _sail_last;
                      _sail_last = mainsail_out;
 
+                     // update time of last step
                      _extr_turn_last_ms = now;
 
                 } else {
-                    // keep same sail angle
+
+                    // maintain the last sail angle
                     mainsail_out = constrain_float((_sail_last), 0.0f ,100.0f);
                 }
 
