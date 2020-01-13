@@ -150,6 +150,12 @@ float AC_PID::update_all(float target, float measurement, bool limit)
     _pid_info.P = P_out;
     _pid_info.D = D_out;
 
+    _IAE += fabsf(_error) * _dt;
+    _ISE += _error * _error * _dt;
+
+	_pid_info.IAE = _IAE;
+	_pid_info.ISE = _ISE;
+
     return P_out + _integrator + D_out;
 }
 

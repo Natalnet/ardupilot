@@ -132,5 +132,8 @@ protected:
     float _error;             // error value to enable filtering
     float _derivative;        // derivative value to enable filtering
 
+    float _IAE;
+    float _ISE;
+
     AP_Logger::PID_Info _pid_info;
 };

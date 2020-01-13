@@ -303,6 +303,8 @@ public:
         float I;
         float D;
         float FF;
+        float ISE;
+        float IAE;
     };
 
     void Write_PID(uint8_t msg_type, const PID_Info &info);

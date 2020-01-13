@@ -762,6 +762,8 @@ struct PACKED log_PID {
     float   I;
     float   D;
     float   FF;
+    float   IAE;
+    float   ISE;
 };
 
 struct PACKED log_Current {
@@ -1297,10 +1299,10 @@ struct PACKED log_Arm_Disarm {
 #define MAG_UNITS "sGGGGGGGGG-s"
 #define MAG_MULTS "FCCCCCCCCC-F"
 
-#define PID_LABELS "TimeUS,Tar,Act,Err,P,I,D,FF"
-#define PID_FMT    "Qfffffff"
-#define PID_UNITS  "s-------"
-#define PID_MULTS  "F-------"
+#define PID_LABELS "TimeUS,Tar,Act,Err,P,I,D,FF,IAE,ISE"
+#define PID_FMT    "Qfffffffff"
+#define PID_UNITS  "s---------"
+#define PID_MULTS  "F---------"
 
 #define QUAT_LABELS "TimeUS,C,Q1,Q2,Q3,Q4"
 #define QUAT_FMT    "QBffff"
@@ -1536,6 +1538,8 @@ struct PACKED log_Arm_Disarm {
       "PIDA", PID_FMT,  PID_LABELS, PID_UNITS, PID_MULTS }, \
     { LOG_PIDS_MSG, sizeof(log_PID), \
       "PIDS", PID_FMT,  PID_LABELS, PID_UNITS, PID_MULTS }, \
+    { LOG_PIDV_MSG, sizeof(log_PID), \
+      "PIDV", PID_FMT,  PID_LABELS, PID_UNITS, PID_MULTS }, \
     { LOG_DSTL_MSG, sizeof(log_DSTL), \
       "DSTL", "QBfLLeccfeffff", "TimeUS,Stg,THdg,Lat,Lng,Alt,XT,Travel,L1I,Loiter,Des,P,I,D", "s??DUm--------", "F??000--------" }, \
     { LOG_BAR2_MSG, sizeof(log_BARO), \
@@ -1700,6 +1704,7 @@ enum LogMessages : uint8_t {
     LOG_PIDY_MSG,
     LOG_PIDA_MSG,
     LOG_PIDS_MSG,
+    LOG_PIDV_MSG,
     LOG_DSTL_MSG,
     LOG_VIBE_MSG,
     LOG_IMUDT_MSG,

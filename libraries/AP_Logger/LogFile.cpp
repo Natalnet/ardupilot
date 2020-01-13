@@ -848,7 +848,9 @@ void AP_Logger::Write_PID(uint8_t msg_type, const PID_Info &info)
         P               : info.P,
         I               : info.I,
         D               : info.D,
-        FF              : info.FF
+        FF              : info.FF,
+        IAE             : info.IAE,
+        ISE             : info.ISE
     };
     WriteBlock(&pkt, sizeof(pkt));
 }
