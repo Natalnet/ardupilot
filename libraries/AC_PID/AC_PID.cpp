@@ -242,6 +242,10 @@ float AC_PID::get_ff()
     return _target * _kff;
 }
 
+float AC_PID::get_error(){
+	return _error;
+}
+
 // todo: remove function when it is no longer used.
 float AC_PID::get_ff(float target)
 {

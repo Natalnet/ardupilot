@@ -387,6 +387,8 @@ public:
     // Sailboat functions
     Sailboat sailboat;
 
+    Metrics metrics;
+
     // object avoidance path planning
     AP_OAPathPlanner oa;
 

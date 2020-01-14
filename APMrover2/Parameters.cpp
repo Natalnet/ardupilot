@@ -741,7 +741,8 @@ ParametersG2::ParametersG2(void)
     windvane(),
     airspeed(),
     wp_nav(attitude_control, rover.L1_controller),
-    sailboat()
+    sailboat(),
+    metrics()
 {
     AP_Param::setup_object_defaults(this, var_info);
 }

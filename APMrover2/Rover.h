@@ -83,6 +83,7 @@
 #include "mode.h"
 #include "AP_Arming.h"
 #include "sailboat.h"
+#include "Metrics.h"
 // Configuration
 #include "config.h"
 #include "defines.h"
@@ -122,6 +123,8 @@ public:
     friend class RC_Channel_Rover;
     friend class RC_Channels_Rover;
 
+    friend class Metrics;
+
     friend class Sailboat;
 
     Rover(void);
@@ -151,6 +154,8 @@ private:
     RC_Channel *channel_steer;
     RC_Channel *channel_throttle;
     RC_Channel *channel_lateral;
+
+    Metrics metrics;
 
     AP_Logger logger;
 

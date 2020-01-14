@@ -49,6 +49,7 @@ public:
     float get_i() const;
     float get_d() const;
     float get_ff();
+    float get_error();
 
     // todo: remove function when it is no longer used.
     float get_ff(float target);

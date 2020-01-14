@@ -133,6 +133,12 @@ bool AP_Arming_Rover::arm(AP_Arming::Method method, const bool do_arming_checks)
     // save home heading for use in sail vehicles
     rover.g2.windvane.record_home_heading();
 
+    // stores current time
+    rover.g2.metrics.save_arm_time(AP_HAL::millis());
+
+    // stores current battery charge
+    //rover.g2.metrics.save_arm_bat(rover.battery.);
+
     change_arm_state();
 
     gcs().send_text(MAV_SEVERITY_INFO, "Throttle armed");
