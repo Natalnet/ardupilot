@@ -137,7 +137,10 @@ bool AP_Arming_Rover::arm(AP_Arming::Method method, const bool do_arming_checks)
     rover.g2.metrics.save_arm_time(AP_HAL::millis());
 
     // stores current battery charge
-    //rover.g2.metrics.save_arm_bat(rover.battery.);
+    float wh;
+    if(rover.battery.consumed_wh(wh)){
+        rover.g2.metrics.save_arm_wh(wh);
+    }
 
     change_arm_state();
 

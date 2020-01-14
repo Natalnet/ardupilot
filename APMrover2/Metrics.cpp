@@ -12,12 +12,7 @@ void Metrics::update_Metrics(){
     update_error();
     update_ISE();
     update_IAE();
-}
-
-// update all errors
-void Metrics::update_error(){
-    get_error_speed();
-    get_error_steering();
+    update_ITAE();
 }
 
 // update all IAE metrics
@@ -32,6 +27,12 @@ void Metrics::update_ISE(){
     _ISE_steering += calc_ISE(_error_steering);
 }
 
+// update all ITAE metrics
+void Metrics::update_ITAE(){
+    _ITAE_speed += calc_ITAE(_error_speed);
+    _ITAE_steering += calc_ITAE(_error_steering);
+}
+
 // calculate IAE
 float Metrics::calc_IAE(float error){
     return fabsf(error) * rover.G_Dt;
@@ -40,6 +41,17 @@ float Metrics::calc_IAE(float error){
 // calculate ISE
 float Metrics::calc_ISE(float error){
     return fabsf(error) * fabsf(error) * rover.G_Dt;
+}
+
+// calculate ITAE
+float Metrics::calc_ITAE(float error){
+    return fabsf(error) * rover.G_Dt * (AP_HAL::millis() - _arm_time);
+}
+
+// update all errors
+void Metrics::update_error(){
+    get_error_speed();
+    get_error_steering();
 }
 
 // get speed error from PID

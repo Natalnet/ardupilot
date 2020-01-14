@@ -35,11 +35,17 @@ public:
     // update all ISE metrics
     void update_ISE();
 
+    // update all ITAE metrics
+    void update_ITAE();
+
     // calculate IAE
     float calc_IAE(float error);
 
     // calculate ISE
     float calc_ISE(float error);
+
+    // calculate ITAE
+    float calc_ITAE(float error);    
 
     // get speed error from PID
     void get_error_speed();
@@ -49,6 +55,9 @@ public:
 
     // get start time of mission
     void save_arm_time(float arm_time) {_arm_time = arm_time;}
+
+    // get start wh of mission
+    void save_arm_wh(float arm_wh) {_arm_wh = arm_wh;}
 
 private:
 
@@ -64,6 +73,13 @@ private:
     float _ISE_speed;
     float _ISE_steering;
 
-    // time of start mission
+    // ITAE variables
+    float _ITAE_speed;
+    float _ITAE_steering;
+
+    // time of mission start
     float _arm_time;
+
+    // wh of mission start
+    float _arm_wh;
 };
