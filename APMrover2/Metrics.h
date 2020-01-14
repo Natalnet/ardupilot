@@ -23,36 +23,47 @@ public:
     // constructor
     Metrics();
 
+    // update all metrics
     void update_Metrics();
 
+    // update all errors
     void update_error();
 
-    // calculate IAE metric. need error info
+    // update all IAE metrics
     void update_IAE();
 
-    // calculate ISE metric. need error info
+    // update all ISE metrics
     void update_ISE();
 
+    // calculate IAE
     float calc_IAE(float error);
 
+    // calculate ISE
     float calc_ISE(float error);
 
+    // get speed error from PID
     void get_error_speed();
 
+    // get steering error from PID
     void get_error_steering();
 
+    // get start time of mission
     void save_arm_time(float arm_time) {_arm_time = arm_time;}
 
 private:
 
-    float _IAE_speed;
-    float _ISE_speed;
-
-    float _IAE_steering;
-    float _ISE_steering;
-
+    // feedback control errors
     float _error_steering;
     float _error_speed;
 
+    // IAE variables
+    float _IAE_speed;
+    float _IAE_steering;
+
+    // ISE variables
+    float _ISE_speed;
+    float _ISE_steering;
+
+    // time of start mission
     float _arm_time;
 };
