@@ -38,6 +38,9 @@ public:
     // update all ITAE metrics
     void update_ITAE();
 
+    // update all ITSE metrics
+    void update_ITSE();
+
     // calculate IAE
     float calc_IAE(float error);
 
@@ -46,6 +49,9 @@ public:
 
     // calculate ITAE
     float calc_ITAE(float error);    
+
+    // calculate ITSE
+    float calc_ITSE(float error);    
 
     // get speed error from PID
     void get_error_speed();
@@ -76,6 +82,10 @@ private:
     // ITAE variables
     float _ITAE_speed;
     float _ITAE_steering;
+
+    // ITSE variables
+    float _ITSE_speed;
+    float _ITSE_steering;
 
     // time of mission start
     float _arm_time;
