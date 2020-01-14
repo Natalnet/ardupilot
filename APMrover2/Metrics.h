@@ -44,6 +44,12 @@ public:
     // update all IAEW metrics
     void update_IAEW();
 
+    // update all IADC metrics
+    void update_IADC();
+
+    // update all IAE_IADC metrics
+    void update_IAE_IADC();
+
     // calculate IAE
     float calc_IAE(float error);
 
@@ -58,6 +64,12 @@ public:
 
     // calculate IAEW (int{abs(e) dt}*int{P dt}))
     float calc_IAEW(float IAE);   
+
+    // calculate IADC
+    float calc_IADC(float diff_actuator);  
+
+    // calculate IAE_IADC
+    float calc_IAE_IADC(float IAE, float IADC);  
 
     // get speed error from PID
     void get_error_speed();
@@ -89,6 +101,14 @@ private:
     // wh since started mission
     float _current_wh;
 
+    // difference off actuators
+    float _diff_steering;
+    float _diff_throttle;
+
+    // last value of actuators
+    float _last_steering;
+    float _last_throttle;
+
     // IAE variables
     float _IAE_speed;
     float _IAE_steering;
@@ -108,4 +128,12 @@ private:
     // IAEW variables
     float _IAEW_speed;
     float _IAEW_steering;
+
+    // IADC variables
+    float _IADC_speed;
+    float _IADC_steering;
+
+    // IAE_IADC variables
+    float _IAE_IADC_speed;
+    float _IAE_IADC_steering;
 };

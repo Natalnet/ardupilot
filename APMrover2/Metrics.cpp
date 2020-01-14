@@ -15,6 +15,8 @@ void Metrics::update_Metrics(){
     update_ITAE();
     update_ITSE();
     update_IAEW();
+    update_IADC();
+    update_IAE_IADC();
 }
 
 // update all IAE metrics
@@ -47,6 +49,18 @@ void Metrics::update_IAEW(){
     _IAEW_steering = calc_IAEW(_IAE_steering);
 }
 
+// update all IADC metrics
+void Metrics::update_IADC(){
+    _IADC_speed += calc_IADC(_diff_throttle);
+    _IADC_steering += calc_IADC(_diff_steering);
+}
+
+// update all IAE_IADC metrics
+void Metrics::update_IAE_IADC(){
+    _IAE_IADC_speed = calc_IAE_IADC(_IAE_speed, _IADC_speed);
+    _IAE_IADC_steering = calc_IAE_IADC(_IAE_steering, _IADC_steering);
+}
+
 // calculate IAE
 float Metrics::calc_IAE(float error){
     return fabsf(error) * rover.G_Dt;
@@ -72,6 +86,16 @@ float Metrics::calc_IAEW(float IAE){
     return IAE * _current_wh;
 }
 
+// calculate IADC
+float Metrics::calc_IADC(float diff_actuator){
+    return fabsf(diff_actuator) * rover.G_Dt;
+}
+
+// calculate IAE_IADC
+float Metrics::calc_IAE_IADC(float IAE, float IADC){
+    return IAE * IADC;
+}
+
 // update all errors (speed and steering)
 void Metrics::update_error(){
     get_error_speed();
@@ -85,6 +109,12 @@ void Metrics::update_error(){
     if(rover.battery.consumed_wh(local_wh)){
         _current_wh = local_wh - _arm_wh;
     }
+
+    _diff_steering = rover.g2.motors.get_steering() - _last_steering;
+    _diff_throttle = rover.g2.motors.get_throttle() - _last_throttle;
+
+    _last_steering = _diff_steering;
+    _last_throttle = _diff_throttle;
 }
 
 // get speed error from PID
