@@ -43,14 +43,8 @@ void Metrics::update_ITSE(){
 
 // update all IAEW metrics
 void Metrics::update_IAEW(){
-    float local_wh;
-    // get current wh. local_wh
-    if(rover.battery.consumed_wh(local_wh)){
-        float consumed_wh_since_armed = local_wh - _arm_wh;
-
-        _IAEW_speed = calc_IAEW(_IAE_speed, consumed_wh_since_armed);
-        _IAEW_steering = calc_IAEW(_IAE_steering, consumed_wh_since_armed);
-    }
+    _IAEW_speed = calc_IAEW(_IAE_speed);
+    _IAEW_steering = calc_IAEW(_IAE_steering);
 }
 
 // calculate IAE
@@ -65,23 +59,32 @@ float Metrics::calc_ISE(float error){
 
 // calculate ITAE
 float Metrics::calc_ITAE(float error){
-    return calc_IAE(error) * (AP_HAL::millis() - _arm_time);
+    return calc_IAE(error) * _current_time;
 }
 
 // calculate ITSE
 float Metrics::calc_ITSE(float error){
-    return calc_ISE(error) * (AP_HAL::millis() - _arm_time);
+    return calc_ISE(error) * _current_time;
 }
 
 // calculate IAEW
-float Metrics::calc_IAEW(float IAE, float consumed_wh){
-    return IAE * consumed_wh;
+float Metrics::calc_IAEW(float IAE){
+    return IAE * _current_wh;
 }
 
 // update all errors (speed and steering)
 void Metrics::update_error(){
     get_error_speed();
     get_error_steering();
+
+    // get time since started mission
+    _current_time = AP_HAL::millis() - _arm_time;
+
+    float local_wh;
+    // get wh since started mission
+    if(rover.battery.consumed_wh(local_wh)){
+        _current_wh = local_wh - _arm_wh;
+    }
 }
 
 // get speed error from PID

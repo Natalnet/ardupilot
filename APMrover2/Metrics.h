@@ -57,7 +57,7 @@ public:
     float calc_ITSE(float error);
 
     // calculate IAEW (int{abs(e) dt}*int{P dt}))
-    float calc_IAEW(float IAE, float consumed_wh);   
+    float calc_IAEW(float IAE);   
 
     // get speed error from PID
     void get_error_speed();
@@ -82,6 +82,12 @@ private:
 
     // wh of mission start
     float _arm_wh;
+
+    // time since started mission
+    float _current_time;
+
+    // wh since started mission
+    float _current_wh;
 
     // IAE variables
     float _IAE_speed;
