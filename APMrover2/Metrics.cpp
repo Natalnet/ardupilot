@@ -13,6 +13,8 @@ void Metrics::update_Metrics(){
     update_ISE();
     update_IAE();
     update_ITAE();
+    update_ITSE();
+    update_IAEW();
 }
 
 // update all IAE metrics
@@ -39,6 +41,18 @@ void Metrics::update_ITSE(){
     _ITSE_steering += calc_ITSE(_error_steering);
 }
 
+// update all IAEW metrics
+void Metrics::update_IAEW(){
+    float local_wh;
+    // get current wh. local_wh
+    if(rover.battery.consumed_wh(local_wh)){
+        float consumed_wh_since_armed = local_wh - _arm_wh;
+
+        _IAEW_speed = calc_IAEW(_IAE_speed, consumed_wh_since_armed);
+        _IAEW_steering = calc_IAEW(_IAE_steering, consumed_wh_since_armed);
+    }
+}
+
 // calculate IAE
 float Metrics::calc_IAE(float error){
     return fabsf(error) * rover.G_Dt;
@@ -51,12 +65,17 @@ float Metrics::calc_ISE(float error){
 
 // calculate ITAE
 float Metrics::calc_ITAE(float error){
-    return calc_IAE() * (AP_HAL::millis() - _arm_time);
+    return calc_IAE(error) * (AP_HAL::millis() - _arm_time);
 }
 
 // calculate ITSE
 float Metrics::calc_ITSE(float error){
-    return calc_ISE() * (AP_HAL::millis() - _arm_time);
+    return calc_ISE(error) * (AP_HAL::millis() - _arm_time);
+}
+
+// calculate IAEW
+float Metrics::calc_IAEW(float IAE, float consumed_wh){
+    return IAE * consumed_wh;
 }
 
 // update all errors (speed and steering)

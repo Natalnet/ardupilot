@@ -41,6 +41,9 @@ public:
     // update all ITSE metrics
     void update_ITSE();
 
+    // update all IAEW metrics
+    void update_IAEW();
+
     // calculate IAE
     float calc_IAE(float error);
 
@@ -51,7 +54,10 @@ public:
     float calc_ITAE(float error);    
 
     // calculate ITSE
-    float calc_ITSE(float error);    
+    float calc_ITSE(float error);
+
+    // calculate IAEW (int{abs(e) dt}*int{P dt}))
+    float calc_IAEW(float IAE, float consumed_wh);   
 
     // get speed error from PID
     void get_error_speed();
@@ -71,6 +77,12 @@ private:
     float _error_steering;
     float _error_speed;
 
+    // time of mission start
+    float _arm_time;
+
+    // wh of mission start
+    float _arm_wh;
+
     // IAE variables
     float _IAE_speed;
     float _IAE_steering;
@@ -87,9 +99,7 @@ private:
     float _ITSE_speed;
     float _ITSE_steering;
 
-    // time of mission start
-    float _arm_time;
-
-    // wh of mission start
-    float _arm_wh;
+    // IAEW variables
+    float _IAEW_speed;
+    float _IAEW_steering;
 };
