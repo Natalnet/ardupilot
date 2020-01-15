@@ -39,7 +39,7 @@ AP_BattMonitor_Analog::read()
         _curr_pin_analog_source->set_pin(_params._curr_pin);
 
         // read current
-        _state.current_amps = (_curr_pin_analog_source->voltage_average()-_params._curr_amp_offset)*_params._curr_amp_per_volt;
+        _state.current_amps = ((_curr_pin_analog_source->voltage_average()-_params._curr_amp_offset)*_params._curr_amp_per_volt) + _mon._current_external;
 
         // update total current drawn since startup
         if (_state.last_time_micros != 0 && dt < 2000000.0f) {
