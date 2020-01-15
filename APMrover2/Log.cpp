@@ -272,6 +272,10 @@ void Rover::Log_Write_Metrics1()
     logger.WriteBlock(&pkt, sizeof(pkt));
 }
 
+void Rover::Log_Write_Metrics(){
+    Log_Write_Metrics1();
+}
+
 // type and unit information can be found in
 // libraries/AP_Logger/Logstructure.h; search for "log_Units" for
 // units and "Format characters" for field type information
@@ -309,6 +313,7 @@ void Rover::Log_Write_Throttle() {}
 void Rover::Log_Write_RC(void) {}
 void Rover::Log_Write_Steering() {}
 void Rover::Log_Write_Vehicle_Startup_Messages() {}
+void Rover::Log_Write_Metrics() {}
 void Rover::Log_Write_Metrics1() {}
 
 #endif  // LOGGING_ENABLED
