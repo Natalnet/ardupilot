@@ -8,7 +8,7 @@ Metrics::Metrics()
 }
 
 // update all metrics
-void Metrics::update_Metrics(){
+void Metrics::update_metrics(){
     update_error();
     update_ISE();
     update_IAE();

@@ -240,6 +240,7 @@ void Sailboat::get_pilot_desired_mainsail(float &mainsail_out)
 // returns true if successful, false if sailboats not enabled
 void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttle_out, float &mainsail_out)
 {
+    rover.g2.metrics.update_metrics();
     if (!sail_enabled()) {
         throttle_out = 0.0f;
         mainsail_out = 0.0f;

@@ -24,7 +24,7 @@ public:
     Metrics();
 
     // update all metrics
-    void update_Metrics();
+    void update_metrics();
 
     // update all errors
     void update_error();
@@ -82,6 +82,23 @@ public:
 
     // get start wh of mission
     void save_arm_wh(float arm_wh) {_arm_wh = arm_wh;}
+
+
+    float get_IAE_steering() {return _IAE_steering;}
+    float get_ISE_steering() {return _ISE_steering;}
+    float get_ITAE_steering() {return _ITAE_steering;}
+    float get_ITSE_steering() {return _ITSE_steering;}
+    float get_IAEW_steering() {return _IAEW_steering;}
+    float get_IADC_steering() {return _IADC_steering;}
+    float get_IAE_IADC_steering() {return _IAE_IADC_steering;}
+
+    float get_IAE_speed() {return _IAE_speed;}
+    float get_ISE_speed() {return _ISE_speed;}
+    float get_ITAE_speed() {return _ITAE_speed;}
+    float get_ITSE_speed() {return _ITSE_speed;}
+    float get_IAEW_speed() {return _IAEW_speed;}
+    float get_IADC_speed() {return _IADC_speed;}
+    float get_IAE_IADC_speed() {return _IAE_IADC_speed;}    
 
 private:
 
