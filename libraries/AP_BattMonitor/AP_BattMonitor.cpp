@@ -538,13 +538,13 @@ void AP_BattMonitor::set_current_external_total(float current_external){
 }
 
 // current value sent by external sensor 
-void AP_BattMonitor::set_current_sail_amps(float current_sail){
-    _current_sail_amps = current_sail;
+void AP_BattMonitor::set_current_sail_amps(float current_sail_amps){
+    _current_sail_amps = current_sail_amps;
 }
 
 // current value sent by external sensor 
-void AP_BattMonitor::set_current_rudder_amps(float current_rudder){
-    _current_rudder_amps = current_rudder;
+void AP_BattMonitor::set_current_rudder_amps(float current_rudder_amps){
+    _current_rudder_amps = current_rudder_amps;
 }
 
 namespace AP {
