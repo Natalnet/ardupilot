@@ -1,5 +1,6 @@
 #pragma once
 // auto generated bindings, don't manually edit
+#include <AP_Mission/AP_Mission.h>
 #include <AP_Param/AP_Param.h>
 #include <RC_Channel/RC_Channel.h>
 #include <SRV_Channel/SRV_Channel.h>

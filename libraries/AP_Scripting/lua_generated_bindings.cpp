@@ -1,6 +1,7 @@
 // auto generated bindings, don't manually edit
 #include "lua_generated_bindings.h"
 #include "lua_boxed_numerics.h"
+#include <AP_Mission/AP_Mission.h>
 #include <AP_Param/AP_Param.h>
 #include <RC_Channel/RC_Channel.h>
 #include <SRV_Channel/SRV_Channel.h>
@@ -514,6 +515,101 @@ const luaL_Reg Location_meta[] = {
     {"get_distance", Location_get_distance},
     {NULL, NULL}
 };
+
+static int AP_Mission_num_commands(lua_State *L) {
+    AP_Mission * ud = AP_Mission::get_singleton();
+    if (ud == nullptr) {
+        return luaL_argerror(L, 1, "mission not supported on this firmware");
+    }
+
+    binding_argcheck(L, 1);
+    const uint16_t data = ud->num_commands();
+
+    lua_pushinteger(L, data);
+    return 1;
+}
+
+static int AP_Mission_get_current_do_cmd_id(lua_State *L) {
+    AP_Mission * ud = AP_Mission::get_singleton();
+    if (ud == nullptr) {
+        return luaL_argerror(L, 1, "mission not supported on this firmware");
+    }
+
+    binding_argcheck(L, 1);
+    const uint16_t data = ud->get_current_do_cmd_id();
+
+    lua_pushinteger(L, data);
+    return 1;
+}
+
+static int AP_Mission_get_current_nav_id(lua_State *L) {
+    AP_Mission * ud = AP_Mission::get_singleton();
+    if (ud == nullptr) {
+        return luaL_argerror(L, 1, "mission not supported on this firmware");
+    }
+
+    binding_argcheck(L, 1);
+    const uint16_t data = ud->get_current_nav_id();
+
+    lua_pushinteger(L, data);
+    return 1;
+}
+
+static int AP_Mission_get_prev_nav_cmd_id(lua_State *L) {
+    AP_Mission * ud = AP_Mission::get_singleton();
+    if (ud == nullptr) {
+        return luaL_argerror(L, 1, "mission not supported on this firmware");
+    }
+
+    binding_argcheck(L, 1);
+    const uint16_t data = ud->get_prev_nav_cmd_id();
+
+    lua_pushinteger(L, data);
+    return 1;
+}
+
+static int AP_Mission_set_current_cmd(lua_State *L) {
+    AP_Mission * ud = AP_Mission::get_singleton();
+    if (ud == nullptr) {
+        return luaL_argerror(L, 1, "mission not supported on this firmware");
+    }
+
+    binding_argcheck(L, 2);
+    const lua_Integer raw_data_2 = luaL_checkinteger(L, 2);
+    luaL_argcheck(L, ((raw_data_2 >= MAX(0, 0)) && (raw_data_2 <= MIN(UINT16_MAX, UINT16_MAX))), 2, "argument out of range");
+    const uint16_t data_2 = static_cast<uint16_t>(raw_data_2);
+    const bool data = ud->set_current_cmd(
+            data_2);
+
+    lua_pushboolean(L, data);
+    return 1;
+}
+
+static int AP_Mission_get_current_nav_index(lua_State *L) {
+    AP_Mission * ud = AP_Mission::get_singleton();
+    if (ud == nullptr) {
+        return luaL_argerror(L, 1, "mission not supported on this firmware");
+    }
+
+    binding_argcheck(L, 1);
+    const uint16_t data = ud->get_current_nav_index();
+
+    lua_pushinteger(L, data);
+    return 1;
+}
+
+static int AP_Mission_state(lua_State *L) {
+    AP_Mission * ud = AP_Mission::get_singleton();
+    if (ud == nullptr) {
+        return luaL_argerror(L, 1, "mission not supported on this firmware");
+    }
+
+    binding_argcheck(L, 1);
+    const uint8_t data = ud->state();
+
+    lua_pushinteger(L, data);
+    return 1;
+}
 
 static int AP_Param_set_and_save_by_name(lua_State *L) {
     AP_Param * ud = AP_Param::get_singleton();
@@ -1824,6 +1920,17 @@ static int AP_AHRS_get_roll(lua_State *L) {
     return 1;
 }
 
+const luaL_Reg AP_Mission_meta[] = {
+    {"num_commands", AP_Mission_num_commands},
+    {"get_current_do_cmd_id", AP_Mission_get_current_do_cmd_id},
+    {"get_current_nav_id", AP_Mission_get_current_nav_id},
+    {"get_prev_nav_cmd_id", AP_Mission_get_prev_nav_cmd_id},
+    {"set_current_cmd", AP_Mission_set_current_cmd},
+    {"get_current_nav_index", AP_Mission_get_current_nav_index},
+    {"state", AP_Mission_state},
+    {NULL, NULL}
+};
+
 const luaL_Reg AP_Param_meta[] = {
     {"set_and_save_by_name", AP_Param_set_and_save_by_name},
     {"set_by_name", AP_Param_set_by_name},
@@ -1957,6 +2064,12 @@ struct userdata_enum {
     int value;
 };
 
+struct userdata_enum AP_Mission_enums[] = {
+    {"MISSION_COMPLETE", AP_Mission::MISSION_COMPLETE},
+    {"MISSION_RUNNING", AP_Mission::MISSION_RUNNING},
+    {"MISSION_STOPPED", AP_Mission::MISSION_STOPPED},
+    {NULL, 0}};
+
 struct userdata_enum AP_Terrain_enums[] = {
     {"TerrainStatusOK", AP_Terrain::TerrainStatusOK},
     {"TerrainStatusUnhealthy", AP_Terrain::TerrainStatusUnhealthy},
@@ -1986,6 +2099,7 @@ const struct userdata_meta userdata_fun[] = {
 };
 
 const struct userdata_meta singleton_fun[] = {
+    {"mission", AP_Mission_meta, AP_Mission_enums},
     {"param", AP_Param_meta, NULL},
     {"rc", RC_Channels_meta, NULL},
     {"SRV_Channels", SRV_Channels_meta, NULL},
@@ -2041,6 +2155,7 @@ void load_generated_bindings(lua_State *L) {
 }
 
 const char *singletons[] = {
+    "mission",
     "param",
     "rc",
     "SRV_Channels",
