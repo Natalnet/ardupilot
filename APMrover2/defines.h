@@ -105,10 +105,5 @@ enum frame_class {
     FRAME_BALANCEBOT = 3,
 };
 
-//  Logging parameters
-enum LoggingParameters {
-     LOG_METRICS1_MSG,
-};
-
 #define AUX_SWITCH_PWM_TRIGGER_HIGH 1800   // pwm value above which the ch7 or ch8 option will be invoked
 #define AUX_SWITCH_PWM_TRIGGER_LOW  1200   // pwm value below which the ch7 or ch8 option will be disabled

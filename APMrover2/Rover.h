@@ -362,6 +362,8 @@ private:
     void Log_Write_Vehicle_Startup_Messages();
     void Log_Write_Metrics();
     void Log_Write_Metrics1();
+    void Log_Write_Metrics2();
+    void Log_Write_External_Current();
     void Log_Read(uint16_t log_num, uint16_t start_page, uint16_t end_page);
     void log_init(void);
 

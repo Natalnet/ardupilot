@@ -150,6 +150,62 @@ void Rover::Log_Write_Sail()
                         (double)g2.sailboat.get_VMG());
 }
 
+void Rover::Log_Write_Metrics1()
+{
+    // only log sail if present
+    if (!rover.g2.sailboat.sail_enabled()) {
+        return;
+    }
+
+    logger.Write("MTC1", "TimeUS,IAE,ISE,ITAE,ITSE,IAEW,IADC,IAEIADC",
+                        "smmmmmmm", "F0000000", "Qfffffff",
+                        AP_HAL::micros64(),
+                        (double)rover.g2.metrics.get_IAE_steering(),
+                        (double)rover.g2.metrics.get_ISE_steering(),
+                        (double)rover.g2.metrics.get_ITAE_steering(),
+                        (double)rover.g2.metrics.get_ITSE_steering(),
+                        (double)rover.g2.metrics.get_IAEW_steering(),
+                        (double)rover.g2.metrics.get_IADC_steering(),
+                        (double)rover.g2.metrics.get_IAE_IADC_steering());
+}
+
+void Rover::Log_Write_Metrics2()
+{
+    // only log sail if present
+    if (!rover.g2.sailboat.sail_enabled()) {
+        return;
+    }
+
+    logger.Write("MTC2", "TimeUS,IAE,ISE,ITAE,ITSE,IAEW,IADC,IAEIADC",
+                        "smmmmmmm", "F0000000", "Qfffffff",
+                        AP_HAL::micros64(),
+                        (double)rover.g2.metrics.get_IAE_speed(),
+                        (double)rover.g2.metrics.get_ISE_speed(),
+                        (double)rover.g2.metrics.get_ITAE_speed(),
+                        (double)rover.g2.metrics.get_ITSE_speed(),
+                        (double)rover.g2.metrics.get_IAEW_speed(),
+                        (double)rover.g2.metrics.get_IADC_speed(),
+                        (double)rover.g2.metrics.get_IAE_IADC_speed());
+}
+
+void Rover::Log_Write_External_Current()
+{
+    // only log sail if present
+    if (!rover.g2.sailboat.sail_enabled()) {
+        return;
+    }
+
+    logger.Write("ECUR", "TimeUS,Samp,Smah,Swh,Ramp,Rmah,Rwh",
+                        "smmmmmm", "F000000", "Qffffff",
+                        AP_HAL::micros64(),
+                        (double)rover.g2.sail_current,
+                        (double)rover.battery.get_sail_consumed_mah(),
+                        (double)rover.battery.get_sail_consumed_wh(),
+                        (double)rover.g2.rudder_current,
+                        (double)rover.battery.get_rudder_consumed_mah(),
+                        (double)rover.battery.get_rudder_consumed_wh());
+}
+
 struct PACKED log_Steering {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -243,37 +299,10 @@ void Rover::Log_Write_Vehicle_Startup_Messages()
     gps.Write_AP_Logger_Log_Startup_messages();
 }
 
-struct PACKED log_Metrics_Error {
-    LOG_PACKET_HEADER;
-    uint64_t time_us;
-    float IAE;
-    float ISE;
-    float ITAE;
-    float ITSE;
-    float IAEW;
-    float IADC;
-    float IAE_IADC;
-};
-
-// Write a metrics1 packet
-void Rover::Log_Write_Metrics1()
-{
-    struct log_Metrics_Error pkt = {
-        LOG_PACKET_HEADER_INIT(LOG_METRICS1_MSG),
-        time_us     : AP_HAL::micros64(),
-        IAE         : rover.g2.metrics.get_IAE_steering(),
-        ISE         : rover.g2.metrics.get_ISE_steering(),
-        ITAE        : rover.g2.metrics.get_ITAE_steering(),
-        ITSE        : rover.g2.metrics.get_ITSE_steering(),
-        IAEW        : rover.g2.metrics.get_IAEW_steering(),
-        IADC        : rover.g2.metrics.get_IADC_steering(),
-        IAE_IADC    : rover.g2.metrics.get_IAE_IADC_steering()
-    };
-    logger.WriteBlock(&pkt, sizeof(pkt));
-}
-
 void Rover::Log_Write_Metrics(){
     Log_Write_Metrics1();
+    Log_Write_Metrics2();
+    Log_Write_External_Current();
 }
 
 // type and unit information can be found in
@@ -291,8 +320,6 @@ const LogStructure Rover::log_structure[] = {
       "STER", "Qhfffff",   "TimeUS,SteerIn,SteerOut,DesLatAcc,LatAcc,DesTurnRate,TurnRate", "s--ookk", "F--0000" },
     { LOG_GUIDEDTARGET_MSG, sizeof(log_GuidedTarget),
       "GUID",  "QBffffff",    "TimeUS,Type,pX,pY,pZ,vX,vY,vZ", "s-mmmnnn", "F-000000" },
-    { LOG_METRICS1_MSG, sizeof(log_Metrics_Error), 
-      "MTC1", "Qfffffff",  "TimeUS,IAE,ISE,ITAE,ITSE,IAEW,IADC,IAEIADC", "smmmmmmm", "F0000000" },
 };
 
 void Rover::log_init(void)
@@ -315,5 +342,7 @@ void Rover::Log_Write_Steering() {}
 void Rover::Log_Write_Vehicle_Startup_Messages() {}
 void Rover::Log_Write_Metrics() {}
 void Rover::Log_Write_Metrics1() {}
+void Rover::Log_Write_Metrics2() {}
+void Rover::Log_Write_External_Current() {}
 
 #endif  // LOGGING_ENABLED
