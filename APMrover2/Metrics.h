@@ -63,7 +63,7 @@ public:
     float calc_ITSE(float error);
 
     // calculate IAEW (int{abs(e) dt}*int{P dt}))
-    float calc_IAEW(float IAE);   
+    float calc_IAEW(float IAE, float consumed_wh);   
 
     // calculate IADC
     float calc_IADC(float diff_actuator);  

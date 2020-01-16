@@ -180,11 +180,11 @@ public:
     // set external current value
     void set_current_rudder_amps(float current_rudder_amps);
 
-    float get_current_sail_consumed_mah() {return _current_sail_consumed_mah;}
-    float get_current_rudder_consumed_mah() {return _current_rudder_consumed_mah;}
+    float get_sail_consumed_mah() {return _current_sail_consumed_mah;}
+    float get_rudder_consumed_mah() {return _current_rudder_consumed_mah;}
 
-    float get_current_sail_consumed_wh() {return _current_sail_consumed_wh;}
-    float get_current_rudder_consumed_wh() {return _current_rudder_consumed_wh;}
+    float get_sail_consumed_wh() {return _current_sail_consumed_wh;}
+    float get_rudder_consumed_wh() {return _current_rudder_consumed_wh;}
 
     static const struct AP_Param::GroupInfo var_info[];
 

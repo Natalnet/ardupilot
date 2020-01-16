@@ -45,8 +45,8 @@ void Metrics::update_ITSE(){
 
 // update all IAEW metrics
 void Metrics::update_IAEW(){
-    _IAEW_speed = calc_IAEW(_IAE_speed);
-    _IAEW_steering = calc_IAEW(_IAE_steering);
+    _IAEW_speed = calc_IAEW(_IAE_speed, rover.battery.get_sail_consumed_wh());
+    _IAEW_steering = calc_IAEW(_IAE_steering, rover.battery.get_rudder_consumed_wh());
 }
 
 // update all IADC metrics
@@ -82,8 +82,8 @@ float Metrics::calc_ITSE(float error){
 }
 
 // calculate IAEW
-float Metrics::calc_IAEW(float IAE){
-    return IAE * _current_wh;
+float Metrics::calc_IAEW(float IAE, float current_wh){
+    return IAE * current_wh;
 }
 
 // calculate IADC
