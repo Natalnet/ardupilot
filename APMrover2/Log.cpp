@@ -206,6 +206,22 @@ void Rover::Log_Write_External_Current()
                         (double)rover.battery.get_rudder_consumed_wh());
 }
 
+void Rover::Log_Write_Actuators_Status()
+{
+    // only log sail if present
+    if (!rover.g2.sailboat.sail_enabled()) {
+        return;
+    }
+
+    logger.Write("ACT1", "TimeUS,SailAng,SailMot,RudAng,RudMot",
+                        "smmmm", "F0000", "Qffff",
+                        AP_HAL::micros64(),
+                        (double)g2.sail_angle,
+                        (double)g2.sail_motor,
+                        (double)g2.rudder_angle,
+                        (double)g2.rudder_motor);
+}
+
 struct PACKED log_Steering {
     LOG_PACKET_HEADER;
     uint64_t time_us;
@@ -303,6 +319,7 @@ void Rover::Log_Write_Metrics(){
     Log_Write_Metrics1();
     Log_Write_Metrics2();
     Log_Write_External_Current();
+    Log_Write_Actuators_Status();
 }
 
 // type and unit information can be found in
@@ -344,5 +361,6 @@ void Rover::Log_Write_Metrics() {}
 void Rover::Log_Write_Metrics1() {}
 void Rover::Log_Write_Metrics2() {}
 void Rover::Log_Write_External_Current() {}
+void Rover::Log_Write_Actuators_Status() {}
 
 #endif  // LOGGING_ENABLED
