@@ -158,3 +158,10 @@ singleton SRV_Channels method find_channel boolean SRV_Channel::Aux_servo_functi
 include RC_Channel/RC_Channel.h
 singleton RC_Channels alias rc
 singleton RC_Channels method get_pwm boolean uint8_t 1 NUM_RC_CHANNELS uint16_t'Null
+
+
+include AP_Param/AP_Param.h
+singleton AP_Param alias param
+singleton AP_Param method get_by_name boolean string float'Null
+singleton AP_Param method set_by_name boolean string float -FLT_MAX FLT_MAX
+singleton AP_Param method set_and_save_by_name boolean string float -FLT_MAX FLT_MAX

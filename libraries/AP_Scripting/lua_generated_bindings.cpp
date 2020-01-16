@@ -1,6 +1,7 @@
 // auto generated bindings, don't manually edit
 #include "lua_generated_bindings.h"
 #include "lua_boxed_numerics.h"
+#include <AP_Param/AP_Param.h>
 #include <RC_Channel/RC_Channel.h>
 #include <SRV_Channel/SRV_Channel.h>
 #include <AP_SerialLED/AP_SerialLED.h>
@@ -513,6 +514,65 @@ const luaL_Reg Location_meta[] = {
     {"get_distance", Location_get_distance},
     {NULL, NULL}
 };
+
+static int AP_Param_set_and_save_by_name(lua_State *L) {
+    AP_Param * ud = AP_Param::get_singleton();
+    if (ud == nullptr) {
+        return luaL_argerror(L, 1, "param not supported on this firmware");
+    }
+
+    binding_argcheck(L, 3);
+    const char * data_2 = luaL_checkstring(L, 2);
+    const float raw_data_3 = luaL_checknumber(L, 3);
+    luaL_argcheck(L, ((raw_data_3 >= MAX(-FLT_MAX, -INFINITY)) && (raw_data_3 <= MIN(FLT_MAX, INFINITY))), 3, "argument out of range");
+    const float data_3 = raw_data_3;
+    const bool data = ud->set_and_save_by_name(
+            data_2,
+            data_3);
+
+    lua_pushboolean(L, data);
+    return 1;
+}
+
+static int AP_Param_set_by_name(lua_State *L) {
+    AP_Param * ud = AP_Param::get_singleton();
+    if (ud == nullptr) {
+        return luaL_argerror(L, 1, "param not supported on this firmware");
+    }
+
+    binding_argcheck(L, 3);
+    const char * data_2 = luaL_checkstring(L, 2);
+    const float raw_data_3 = luaL_checknumber(L, 3);
+    luaL_argcheck(L, ((raw_data_3 >= MAX(-FLT_MAX, -INFINITY)) && (raw_data_3 <= MIN(FLT_MAX, INFINITY))), 3, "argument out of range");
+    const float data_3 = raw_data_3;
+    const bool data = ud->set_by_name(
+            data_2,
+            data_3);
+
+    lua_pushboolean(L, data);
+    return 1;
+}
+
+static int AP_Param_get_by_name(lua_State *L) {
+    AP_Param * ud = AP_Param::get_singleton();
+    if (ud == nullptr) {
+        return luaL_argerror(L, 1, "param not supported on this firmware");
+    }
+
+    binding_argcheck(L, 2);
+    const char * data_2 = luaL_checkstring(L, 2);
+    float data_5003 = {};
+    const bool data = ud->get_by_name(
+            data_2,
+            data_5003);
+
+    if (data) {
+        lua_pushnumber(L, data_5003);
+    } else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
 
 static int RC_Channels_get_pwm(lua_State *L) {
     RC_Channels * ud = RC_Channels::get_singleton();
@@ -1764,6 +1824,13 @@ static int AP_AHRS_get_roll(lua_State *L) {
     return 1;
 }
 
+const luaL_Reg AP_Param_meta[] = {
+    {"set_and_save_by_name", AP_Param_set_and_save_by_name},
+    {"set_by_name", AP_Param_set_by_name},
+    {"get_by_name", AP_Param_get_by_name},
+    {NULL, NULL}
+};
+
 const luaL_Reg RC_Channels_meta[] = {
     {"get_pwm", RC_Channels_get_pwm},
     {NULL, NULL}
@@ -1919,6 +1986,7 @@ const struct userdata_meta userdata_fun[] = {
 };
 
 const struct userdata_meta singleton_fun[] = {
+    {"param", AP_Param_meta, NULL},
     {"rc", RC_Channels_meta, NULL},
     {"SRV_Channels", SRV_Channels_meta, NULL},
     {"serialLED", AP_SerialLED_meta, NULL},
@@ -1973,6 +2041,7 @@ void load_generated_bindings(lua_State *L) {
 }
 
 const char *singletons[] = {
+    "param",
     "rc",
     "SRV_Channels",
     "serialLED",
