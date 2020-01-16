@@ -365,6 +365,8 @@ private:
     void Log_Read(uint16_t log_num, uint16_t start_page, uint16_t end_page);
     void log_init(void);
 
+    void update_external_current();
+
     // mode.cpp
     Mode *mode_from_mode_num(enum Mode::Number num);
 

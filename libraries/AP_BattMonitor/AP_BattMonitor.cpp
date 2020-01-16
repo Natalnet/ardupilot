@@ -533,8 +533,18 @@ bool AP_BattMonitor::reset_remaining(uint16_t battery_mask, float percentage)
 }
 
 // current value sent by external sensor 
-void AP_BattMonitor::set_current_external(float current_external){
+void AP_BattMonitor::set_current_external_total(float current_external){
     _current_external = current_external;
+}
+
+// current value sent by external sensor 
+void AP_BattMonitor::set_current_sail_amps(float current_sail){
+    _current_sail_amps = current_sail;
+}
+
+// current value sent by external sensor 
+void AP_BattMonitor::set_current_rudder_amps(float current_rudder){
+    _current_rudder_amps = current_rudder;
 }
 
 namespace AP {

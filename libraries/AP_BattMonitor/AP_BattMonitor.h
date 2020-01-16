@@ -172,7 +172,13 @@ public:
     bool reset_remaining(uint16_t battery_mask, float percentage);
 
     // set external current value
-    void set_current_external(float current_external);
+    void set_current_external_total(float current_external);
+
+    // set external current value
+    void set_current_sail_amps(float current_external);
+
+    // set external current value
+    void set_current_rudder_amps(float current_external);
 
     static const struct AP_Param::GroupInfo var_info[];
 
@@ -180,8 +186,6 @@ protected:
 
     /// parameters
     AP_BattMonitor_Params _params[AP_BATT_MONITOR_MAX_INSTANCES];
-
-    float _current_external = 0;
 
 private:
     static AP_BattMonitor *_singleton;
@@ -203,6 +207,15 @@ private:
     int8_t      _highest_failsafe_priority; // highest selected failsafe action level (used to restrict what actions we move into)
     bool        _has_triggered_failsafe;  // true after a battery failsafe has been triggered for the first time
 
+    float _current_external = 0;
+    float _current_sail_amps = 0;
+    float _current_rudder_amps = 0;
+
+    float _current_rudder_consumed_mah = 0;
+    float _current_sail_consumed_mah = 0;
+    
+    float _current_rudder_consumed_wh = 0;
+    float _current_sail_consumed_wh = 0;
 };
 
 namespace AP {

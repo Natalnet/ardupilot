@@ -45,8 +45,17 @@ AP_BattMonitor_Analog::read()
         if (_state.last_time_micros != 0 && dt < 2000000.0f) {
             // .0002778 is 1/3600 (conversion to hours)
             float mah = _state.current_amps * dt * 0.0000002778f;
+            float mah_sail = _mon._current_sail_amps * dt * 0.0000002778f;
+            float mah_rudder = _mon._current_rudder_amps * dt * 0.0000002778f;
+
             _state.consumed_mah += mah;
             _state.consumed_wh  += 0.001f * mah * _state.voltage;
+
+            _mon._current_sail_consumed_mah += mah_sail;
+            _mon._current_rudder_consumed_mah += mah_rudder;
+
+            _mon._current_sail_consumed_wh = 0.001f * mah_sail * _state.voltage;
+            _mon._current_rudder_consumed_wh = 0.001f * mah_rudder * _state.voltage;
         }
 
         // record time

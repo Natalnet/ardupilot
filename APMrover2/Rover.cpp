@@ -111,6 +111,7 @@ const AP_Scheduler::Task Rover::scheduler_tasks[] = {
 #if OSD_ENABLED == ENABLED
     SCHED_TASK(publish_osd_info,        1,     10),
 #endif
+    SCHED_TASK(update_external_current,             20,    100),
 };
 
 constexpr int8_t Rover::_failsafe_priorities[7];
@@ -310,6 +311,15 @@ void Rover::update_GPS(void)
         camera.update();
 #endif
     }
+}
+
+void Rover::update_external_current(){
+
+    g2.current_total = g2.sail_current + g2.rudder_current;
+
+    battery.set_current_external_total(g2.current_total);
+    battery.set_current_sail_amps(g2.sail_current);
+    battery.set_current_rudder_amps(g2.rudder_current);
 }
 
 void Rover::update_current_mode(void)
