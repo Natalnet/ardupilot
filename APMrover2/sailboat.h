@@ -106,6 +106,8 @@ public:
 
     Vector2f projection(Vector2f point, Vector2f line);
 
+    std::vector<Location> calc_location_from_NE(const Location &origin, std::vector<Vector2f> points_NE);
+
 private:
 
     struct Line

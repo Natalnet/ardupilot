@@ -822,6 +822,12 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points(const Location &or
         gcs().send_text(MAV_SEVERITY_INFO, "Tack Point %d = (%f, %f)", (int)i, local.at(i).x, local.at(i).y);
     }
 
+    std::vector<Location> tmp = calc_location_from_NE(origin, local);
+
+    for(std::vector<int>::size_type i = 0; i < tmp.size(); i++){
+        gcs().send_text(MAV_SEVERITY_INFO, "Tack lat lng %d = (%d, %d)", (int)i, tmp.at(i).lat, tmp.at(i).lng);
+    }
+
     return local;
 }
 
@@ -859,4 +865,20 @@ Vector2f Sailboat::projection(Vector2f point, Vector2f line){
 
     return out;
 
+}
+
+std::vector<Location> Sailboat::calc_location_from_NE(const Location &origin, std::vector<Vector2f> points_NE){
+    std::vector<Location> local;
+
+    for(std::vector<int>::size_type i = 0; i < points_NE.size(); i++){
+        Location tmp;
+
+        tmp = origin;
+
+        tmp.offset(points_NE.at(i).x, points_NE.at(i).y);
+
+        local.push_back(tmp);
+    }
+
+    return local;
 }
