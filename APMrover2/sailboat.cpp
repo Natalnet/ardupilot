@@ -158,6 +158,15 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("POLAR_T", 15, Sailboat, sail_polar_t, 1.0f),
 
+    // @Param: TACK_TYPE
+    // @DisplayName: Sailing tack type
+    // @Description: 0 - reactive, 1 - deliberative
+    // @Units: degrees
+    // @Range: 0 10
+    // @Increment: 0.1
+    // @User: Standard
+    //AP_GROUPINFO("TACK_TYPE", 16, Sailboat, tack_type, 1.0f),
+
     AP_GROUPEND
 };
 
@@ -588,6 +597,7 @@ float Sailboat::calc_heading(float desired_heading_cd)
 
     // if tack triggered, calculate target heading
     if (should_tack && (now - tack_clear_ms) > TACK_RETRY_TIME_MS) {
+        std::vector<Vector2f> tack_points = calc_deliberative_tack_points(rover.g2.wp_nav.get_origin(), rover.g2.wp_nav.get_destination(), 20.0, 60.0, desired_heading_rad);
         gcs().send_text(MAV_SEVERITY_INFO, "Sailboat: Tacking");
         // calculate target heading for the new tack
         switch (current_tack) {
@@ -674,3 +684,179 @@ bool Sailboat::motor_assist_low_wind() const
             (rover.g2.windvane.get_true_wind_speed() < sail_windspeed_min));
 }
 
+// theta_t and alpha_tw are in degrees
+std::vector<Vector2f> Sailboat::calc_deliberative_tack_points(const Location &origin, const Location &destination, float d_t, float theta_t, float desired_heading_cd){
+
+    std::vector<Vector2f> local;
+
+    float x0 = 0.0f;
+    float y0 = 0.0f;
+
+    Vector2f destination_NE = origin.get_distance_NE(destination);
+    Vector2f origin_NE;
+    origin_NE.x = x0;
+    origin_NE.y = y0;
+
+    float x1 = destination_NE.x;
+    float y1 = destination_NE.y;
+
+    Vector2f line_A;
+    Vector2f line_B;
+    Vector2f line_L1;
+    Vector2f line_L2;
+    Vector2f line_t1;
+
+    // get angle of attack of apparent wind
+    float alpha_aw = wrap_PI(rover.g2.windvane.get_apparent_wind_direction_rad() - radians(desired_heading_cd * 0.01f));
+
+    // find line A
+    if (fabsf(x1 - x0) < 0.000000000001) {
+        line_A.x = 100000000;
+    } else {
+        line_A.x = (y1 - y0) / (x1 - x0);
+    }
+
+    line_A.y = y0 - (line_A.x * x0);
+
+    float alpha_p = origin.get_bearing_to(destination) * 0.01f;
+
+    float tan_theta_t = tan(radians(theta_t));
+
+    // alpha_aw -> angle of attack of apparent wind; it basically says wich side is better to start tacking
+    if (alpha_aw > alpha_p){
+        line_B.x = (-line_A.x + tan_theta_t) / (-tan_theta_t * line_A.x - 1);
+    } else {
+        line_B.x = (-line_A.x - tan_theta_t) / (tan_theta_t * line_A.x - 1);
+    }
+
+    line_B.y = y0 - (line_B.x * x0);
+
+    // find distance from origin in line_A that has a distance of d_t from line_B
+    float H = d_t/sin(radians(theta_t));
+
+    float a = 1 + pow(line_B.x,2);
+    float b = (-2)*x0 + 2*line_B.x*line_B.y - 2*line_B.x*y0;
+    float c = pow(x0,2) + pow(y0,2) + pow(line_B.y,2) - 2*y0*line_B.y - pow(H,2);
+
+    float delta = pow(b,2) - 4*a*c;
+
+    Vector2f t1;
+    Vector2f t2;
+
+    // find roots
+    t1.x = (-b + sqrt(delta))/(2*a);
+    t1.y = line_B.x*t1.x + line_B.y;
+
+    t2.x = (-b - sqrt(delta))/(2*a);
+    t2.y = line_B.x*t2.x + line_B.y;
+
+    // distance from root points to destination
+    float d_t1_p1 = get_distance(t1, destination_NE);
+    float d_t2_p1 = get_distance(t2, destination_NE);
+
+    Vector2f t;
+
+    // the first tack point is the one closer to destination
+    if(d_t1_p1 < d_t2_p1){
+        t = t1;
+    } else {
+        t = t2;
+    }
+
+    // (x_t,y_t) is the first tack point
+    local.push_back(t);
+
+    // project p_t in line A (create struct Line (a and b))
+    Vector2f p_p = projection(t, line_A);
+
+    // distance between origin and p_p
+    float d_p0 = get_distance(origin_NE, p_p);
+    d_p0 = d_p0 * 2;
+
+    // find line L1 and L2
+    line_L1.y = -line_A.x * t.x + t.y;
+    line_L1.x = line_A.x;
+
+    if(line_L1.y > line_A.y) {
+        line_L2.y = line_A.y - (line_L1.y - line_A.y);
+    } else {
+        line_L2.y = line_A.y + (line_A.y - line_L1.y);
+    }
+
+    line_L2.x = line_A.x;
+
+    // number of tack points (distance from origin to destination divided by d_p0)
+    float n_t = floor(get_distance(origin_NE, destination_NE)/d_p0);
+
+    Vector2f step;
+    // step in x and y direction
+    step.x = (p_p.x - x0) * 2;
+    step.y = (p_p.y - y0) * 2;
+
+    // find first tack point in both lines
+    Vector2f p0_L1 = projection(p_p, line_L1);
+    Vector2f p0_L2 = projection(p_p, line_L2);
+
+    // run through each line, advancing delta_x,delta_y and find the tack points
+    for (int z = 1; z < n_t; z++){
+        Vector2f step_tmp;
+
+        step_tmp.x = z * step.x;
+        step_tmp.y = z * step.y;
+
+        Vector2f p_tmp;
+
+        // even steps
+        if (z % 2 == 0){
+            p_tmp.x = p0_L1.x + step_tmp.x;
+            p_tmp.y = p0_L1.y + step_tmp.y;
+            local.push_back(p_tmp);
+        } else {
+            p_tmp.x = p0_L2.x + step_tmp.x;
+            p_tmp.y = p0_L2.y + step_tmp.y;
+            local.push_back(p_tmp);
+        }
+    }
+
+    for(std::vector<int>::size_type i = 0; i < local.size(); i++){
+        gcs().send_text(MAV_SEVERITY_INFO, "Tack Point %d = (%f, %f)", (int)i, local.at(i).x, local.at(i).y);
+    }
+
+    return local;
+}
+
+// get distance between (m) two points
+float Sailboat::get_distance(Vector2f origin, const Location &loc2){
+    float dlat = (float)(loc2.lat - origin.x);
+    float dlng = ((float)(loc2.lng - origin.y)) * loc2.longitude_scale();
+    return norm(dlat, dlng) * 0.011131884502145034f;
+}
+
+// get distance between (m) two points
+float Sailboat::get_distance(Vector2f origin, Vector2f destination){
+    float dlat = (float)(destination.x - origin.x);
+    float dlng = (float)(destination.y - origin.y);
+    return norm(dlat, dlng);
+}
+
+// project a point into a line. return the projection point
+Vector2f Sailboat::projection(Vector2f point, Vector2f line){
+    Vector2f out;
+    Vector2f aux;
+
+    if (fabsf(line.x) < 0.0000000001){
+        line.x = 0.0000000001;
+    }
+    if (fabsf(line.y) < 0.0000000001) {
+        line.y = 0.0000000001;
+    }
+
+    aux.x = -1/line.x;
+    aux.y = -aux.x * point.x + point.y;
+
+    out.x = (aux.y - line.y) / (line.x - aux.x);
+    out.y = line.x * out.x + line.y;
+
+    return out;
+
+}

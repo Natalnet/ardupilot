@@ -58,6 +58,9 @@ public:
     // get current destination. Note: this is not guaranteed to be valid (i.e. _orig_and_dest_valid is not checked)
     const Location &get_destination() { return _destination; }
 
+    // get current destination. Note: this is not guaranteed to be valid (i.e. _orig_and_dest_valid is not checked)
+    const Location &get_origin() { return _origin; }
+
     // get object avoidance adjusted destination. Note: this is not guaranteed to be valid (i.e. _orig_and_dest_valid is not checked)
     const Location &get_oa_destination() { return _oa_destination; }
 

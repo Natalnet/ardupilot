@@ -98,7 +98,27 @@ public:
     // return sailboat loiter radius
     float get_loiter_radius() const {return loit_radius;}
 
+    std::vector<Vector2f> calc_deliberative_tack_points(const Location &origin, const Location &destination, float dt, float theta_t, float desired_heading_cd);
+
+    float get_distance(Vector2f origin, const Location &loc2);
+
+    float get_distance(Vector2f origin, Vector2f destination);
+
+    Vector2f projection(Vector2f point, Vector2f line);
+
 private:
+
+    struct Line
+    {
+        float a;
+        float b;
+    };
+
+    struct Point
+    {
+        float x;
+        float y;
+    };
 
     // true if motor is on to assist with slow tack
     bool motor_assist_tack() const;
@@ -138,4 +158,6 @@ private:
     float _extr_turn_last_ms = 0.0f;
     float _polar_turn_last_ms = 0.0f;
     float _pid_offset_speed = 0.0f;
+
+    int tack_type;
 };
