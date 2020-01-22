@@ -374,15 +374,43 @@ void Mode::navigate_to_waypoint()
     calc_throttle(desired_speed, true);
 
     float desired_heading_cd = g2.wp_nav.oa_wp_bearing_cd();
-    if (g2.sailboat.use_indirect_route(desired_heading_cd)) {
-        // sailboats use heading controller when tacking upwind
-        desired_heading_cd = g2.sailboat.calc_heading(desired_heading_cd);
-        // use pivot turn rate for tacks
-        const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
-        calc_steering_to_heading(desired_heading_cd, turn_rate);
-    } else {
-        // call turn rate steering controller
-        calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
+    
+    switch (g2.sailboat.get_tack_type()){
+
+        case (g2.sailboat.REACTIVE): {
+
+            if (g2.sailboat.use_indirect_route(desired_heading_cd)) {
+                // sailboats use heading controller when tacking upwind
+                desired_heading_cd = g2.sailboat.calc_heading(desired_heading_cd);
+                // use pivot turn rate for tacks
+                const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
+                calc_steering_to_heading(desired_heading_cd, turn_rate);
+            } else {
+                // call turn rate steering controller
+                calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
+            }
+
+            break;
+        }
+
+        case (g2.sailboat.DELIBERATIVE): {
+
+            if (g2.sailboat.use_indirect_route(desired_heading_cd)) {
+                // calculate tack points
+                std::vector<Location> local = g2.sailboat.calc_tack_points(desired_heading_cd);
+                // insert tack waypoints into mission
+                // remove waypoints from mission if finished tack 
+                // check if is going to the destiny, if not, change parameter to reactive
+                //desired_heading_cd = g2.sailboat.calc_heading_deliberative(desired_heading_cd);
+                // use pivot turn rate for tacks
+                const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
+                calc_steering_to_heading(desired_heading_cd, turn_rate);
+            } else {
+                // call turn rate steering controller
+                calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
+            }
+            break;
+        }
     }
 }
 

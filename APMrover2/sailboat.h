@@ -87,6 +87,12 @@ public:
         POLAR_DIAGRAM_REAL = 3,
         EXTREMUM_SEEKING = 4
     };
+    
+    // states of SAIL_TACK_TYPE parameter and sail_tack_type variable
+    enum SailboatTackType : uint8_t {
+        REACTIVE  = 0,
+        DELIBERATIVE = 1
+    };
 
     // set state of motor
     // if report_failure is true a message will be sent to all GCSs
@@ -98,7 +104,21 @@ public:
     // return sailboat loiter radius
     float get_loiter_radius() const {return loit_radius;}
 
-    std::vector<Vector2f> calc_deliberative_tack_points(const Location &origin, const Location &destination, float dt, float theta_t, float desired_heading_cd);
+    // return sailboat loiter radius
+    AP_Int8 get_tack_type() const {return tack_type;}
+
+    // calculate the heading to sail on if we cant go upwind
+    std::vector<Location> calc_tack_points(float desired_heading_cd);
+
+private:
+
+    // true if motor is on to assist with slow tack
+    bool motor_assist_tack() const;
+
+    // true if motor should be on to assist with low wind
+    bool motor_assist_low_wind() const;
+
+    std::vector<Vector2f> calc_deliberative_tack_points_NE(float desired_heading_cd);
 
     float get_distance(Vector2f origin, const Location &loc2);
 
@@ -106,27 +126,7 @@ public:
 
     Vector2f projection(Vector2f point, Vector2f line);
 
-    std::vector<Location> calc_location_from_NE(const Location &origin, std::vector<Vector2f> points_NE);
-
-private:
-
-    struct Line
-    {
-        float a;
-        float b;
-    };
-
-    struct Point
-    {
-        float x;
-        float y;
-    };
-
-    // true if motor is on to assist with slow tack
-    bool motor_assist_tack() const;
-
-    // true if motor should be on to assist with low wind
-    bool motor_assist_low_wind() const;
+    std::vector<Location> calc_location_from_NE(std::vector<Vector2f> points_NE);
 
     // parameters
     AP_Int8 enable;
@@ -144,6 +144,9 @@ private:
     AP_Float sail_extr_step;
     AP_Float sail_extr_t;
     AP_Float sail_polar_t;
+    AP_Int8 tack_type;
+    AP_Float tack_d_t;
+    AP_Float tack_theta_t;
 
     RC_Channel *channel_mainsail;   // rc input channel for controlling mainsail
     bool currently_tacking;         // true when sailboat is in the process of tacking to a new heading
@@ -160,6 +163,4 @@ private:
     float _extr_turn_last_ms = 0.0f;
     float _polar_turn_last_ms = 0.0f;
     float _pid_offset_speed = 0.0f;
-
-    int tack_type;
 };

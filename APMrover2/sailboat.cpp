@@ -165,7 +165,25 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @Range: 0 10
     // @Increment: 0.1
     // @User: Standard
-    //AP_GROUPINFO("TACK_TYPE", 16, Sailboat, tack_type, 1.0f),
+    AP_GROUPINFO("TACK_TYPE", 16, Sailboat, tack_type, 0.0f),
+
+    // @Param: TACK_TYPE
+    // @DisplayName: Sailing tack type
+    // @Description: 0 - reactive, 1 - deliberative
+    // @Units: degrees
+    // @Range: 0 10
+    // @Increment: 0.1
+    // @User: Standard
+    AP_GROUPINFO("TACK_DT", 17, Sailboat, tack_d_t, 10.0f),
+
+    // @Param: TACK_TYPE    
+    // @DisplayName: Sailing tack type
+    // @Description: 0 - reactive, 1 - deliberative
+    // @Units: degrees
+    // @Range: 0 10
+    // @Increment: 0.1
+    // @User: Standard
+    AP_GROUPINFO("TACK_THETAT", 18, Sailboat, tack_theta_t, 60.0f),
 
     AP_GROUPEND
 };
@@ -597,7 +615,7 @@ float Sailboat::calc_heading(float desired_heading_cd)
 
     // if tack triggered, calculate target heading
     if (should_tack && (now - tack_clear_ms) > TACK_RETRY_TIME_MS) {
-        std::vector<Vector2f> tack_points = calc_deliberative_tack_points(rover.g2.wp_nav.get_origin(), rover.g2.wp_nav.get_destination(), 20.0, 60.0, desired_heading_rad);
+        std::vector<Location> tack_points = calc_tack_points(desired_heading_rad);
         gcs().send_text(MAV_SEVERITY_INFO, "Sailboat: Tacking");
         // calculate target heading for the new tack
         switch (current_tack) {
@@ -637,6 +655,7 @@ float Sailboat::calc_heading(float desired_heading_cd)
     } else {
         return degrees(right_no_go_heading_rad) * 100.0f;
     }
+
 }
 
 // set state of motor
@@ -685,12 +704,18 @@ bool Sailboat::motor_assist_low_wind() const
 }
 
 // theta_t and alpha_tw are in degrees
-std::vector<Vector2f> Sailboat::calc_deliberative_tack_points(const Location &origin, const Location &destination, float d_t, float theta_t, float desired_heading_cd){
+std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_heading_cd){
 
     std::vector<Vector2f> local;
 
     float x0 = 0.0f;
     float y0 = 0.0f;
+
+    Location origin = rover.g2.wp_nav.get_origin();
+    Location destination = rover.g2.wp_nav.get_destination();
+
+    float d_t = tack_d_t;
+    float theta_t = tack_theta_t;
 
     Vector2f destination_NE = origin.get_distance_NE(destination);
     Vector2f origin_NE;
@@ -818,15 +843,11 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points(const Location &or
         }
     }
 
-    for(std::vector<int>::size_type i = 0; i < local.size(); i++){
-        gcs().send_text(MAV_SEVERITY_INFO, "Tack Point %d = (%f, %f)", (int)i, local.at(i).x, local.at(i).y);
-    }
+    // std::vector<Location> tmp = calc_location_from_NE(local);
 
-    std::vector<Location> tmp = calc_location_from_NE(origin, local);
-
-    for(std::vector<int>::size_type i = 0; i < tmp.size(); i++){
-        gcs().send_text(MAV_SEVERITY_INFO, "Tack lat lng %d = (%d, %d)", (int)i, tmp.at(i).lat, tmp.at(i).lng);
-    }
+    // for(std::vector<int>::size_type i = 0; i < tmp.size(); i++){
+    //     gcs().send_text(MAV_SEVERITY_INFO, "Tack lat lng %d = (%d, %d)", (int)i, tmp.at(i).lat, tmp.at(i).lng);
+    // }
 
     return local;
 }
@@ -867,13 +888,13 @@ Vector2f Sailboat::projection(Vector2f point, Vector2f line){
 
 }
 
-std::vector<Location> Sailboat::calc_location_from_NE(const Location &origin, std::vector<Vector2f> points_NE){
+std::vector<Location> Sailboat::calc_location_from_NE(std::vector<Vector2f> points_NE){
     std::vector<Location> local;
 
     for(std::vector<int>::size_type i = 0; i < points_NE.size(); i++){
         Location tmp;
 
-        tmp = origin;
+        tmp = rover.g2.wp_nav.get_origin();
 
         tmp.offset(points_NE.at(i).x, points_NE.at(i).y);
 
@@ -881,4 +902,8 @@ std::vector<Location> Sailboat::calc_location_from_NE(const Location &origin, st
     }
 
     return local;
+}
+
+std::vector<Location> Sailboat::calc_tack_points(float desired_heading_cd){
+    return calc_location_from_NE(calc_deliberative_tack_points_NE(desired_heading_cd));
 }
