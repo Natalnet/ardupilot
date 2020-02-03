@@ -157,6 +157,8 @@ private:
     bool tack_assist;               // true if we should use some throttle to assist tack
     UseMotor motor_state;           // current state of motor output
 
+    bool first_tack = false;
+
     float _speed_last = 0.0f;
     float _sail_last = 0.0f;
     float _sail_last_last = 0.0f;
