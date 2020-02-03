@@ -200,6 +200,10 @@ protected:
     float _distance_to_destination; // distance from vehicle to final destination in meters
     bool _reached_destination;  // true once the vehicle has reached the destination
     float _desired_yaw_cd;      // desired yaw in centi-degrees.  used in Auto, Guided and Loiter
+    uint16_t _mission_size;
+    uint16_t _tack_points_size;
+    uint16_t _index_tack_start;
+    bool _is_tack;
 };
 
 

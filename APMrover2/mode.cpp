@@ -395,20 +395,50 @@ void Mode::navigate_to_waypoint()
 
         case (g2.sailboat.DELIBERATIVE): {
 
+            // im assuming this only run once
             if (g2.sailboat.use_indirect_route(desired_heading_cd)) {
-                // calculate tack points
-                std::vector<Location> local = g2.sailboat.calc_tack_points(desired_heading_cd);
-                // insert tack waypoints into mission
-                // remove waypoints from mission if finished tack 
-                // check if is going to the destiny, if not, change parameter to reactive
-                //desired_heading_cd = g2.sailboat.calc_heading_deliberative(desired_heading_cd);
-                // use pivot turn rate for tacks
-                const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
-                calc_steering_to_heading(desired_heading_cd, turn_rate);
+                // calculate tack points (once)
+                std::vector<Location> tack_points = g2.sailboat.calc_tack_points(desired_heading_cd);
+
+                // calculate mission size before adding tack points
+                _mission_size = rover.mode_auto.mission.num_commands();
+
+                // calculate total number of tack points
+                _tack_points_size = tack_points.size();
+
+                // store the index when the sailboat started to tack
+                _index_tack_start = rover.mode_auto.mission.get_current_nav_id();
+
+                // add tack points to mission
+                AP_Mission::Mission_Command cmd;
+                cmd.id = MAV_CMD_NAV_WAYPOINT;
+                cmd.p1 = 0;
+
+                for(std::vector<int>::size_type i = 0; i < tack_points.size(); i++){
+                    cmd.content.location = tack_points.at(i);
+                    if(rover.mode_auto.mission.add_cmd(cmd)){
+                        gcs().send_text(MAV_SEVERITY_INFO, "Added tack %d", (int)i);
+                    }
+                }
+
+                // jump to first tack point
+                if(rover.mode_auto.mission.set_current_cmd(_mission_size + 1)){
+                    _is_tack = true;
+                }
             } else {
-                // call turn rate steering controller
+                // run through all tack points normally (assuming none is in the deadzone). when finished all tack points:
+                if(rover.mode_auto.mission.get_current_nav_id() == rover.mode_auto.mission.num_commands() && _is_tack){
+                    // go back to location before tack
+                    rover.mode_auto.mission.set_current_cmd(_index_tack_start);
+
+                    // remove tack points from mission
+                    rover.mode_auto.mission.truncate(_mission_size);
+
+                    _is_tack = false;
+                }
                 calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
             }
+
             break;
         }
     }

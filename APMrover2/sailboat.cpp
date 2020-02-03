@@ -618,34 +618,6 @@ float Sailboat::calc_heading(float desired_heading_cd)
         std::vector<Location> tack_points = calc_tack_points(desired_heading_rad);
         gcs().send_text(MAV_SEVERITY_INFO, "Sailboat: Tacking");
 
-
-        if(!first_tack){
-            uint16_t index;
-
-            index = rover.mode_auto.mission.num_commands();
-            gcs().send_text(MAV_SEVERITY_INFO, "Number of Commands: %d", (int)index);
-
-            AP_Mission::Mission_Command cmd;
-            cmd.id = MAV_CMD_NAV_WAYPOINT;
-            cmd.content.location = Location{
-                12345678,
-                23456789,
-                0,
-                Location::AltFrame::ABSOLUTE
-            };
-
-            rover.mode_auto.mission.add_cmd(cmd);
-
-            first_tack = true;
-
-            gcs().send_text(MAV_SEVERITY_INFO, "Number of Commands: %d", (int)rover.mode_auto.mission.num_commands());
-
-            rover.mode_auto.mission.truncate(index);
-
-            gcs().send_text(MAV_SEVERITY_INFO, "Number of Commands: %d", (int)rover.mode_auto.mission.num_commands());
-        }
-
-
         // calculate target heading for the new tack
         switch (current_tack) {
             case AP_WindVane::Sailboat_Tack::TACK_PORT:
@@ -935,4 +907,5 @@ std::vector<Location> Sailboat::calc_location_from_NE(std::vector<Vector2f> poin
 
 std::vector<Location> Sailboat::calc_tack_points(float desired_heading_cd){
     return calc_location_from_NE(calc_deliberative_tack_points_NE(desired_heading_cd));
+
 }
