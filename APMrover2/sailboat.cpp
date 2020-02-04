@@ -749,7 +749,7 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_h
     float tan_theta_t = tan(radians(theta_t));
 
     // alpha_aw -> angle of attack of apparent wind; it basically says wich side is better to start tacking
-    if (alpha_aw > alpha_p){
+    if (alpha_aw < alpha_p){
         line_B.x = (-line_A.x + tan_theta_t) / (-tan_theta_t * line_A.x - 1);
     } else {
         line_B.x = (-line_A.x - tan_theta_t) / (tan_theta_t * line_A.x - 1);

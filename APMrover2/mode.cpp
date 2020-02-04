@@ -426,13 +426,7 @@ void Mode::navigate_to_waypoint()
                     gcs().send_text(MAV_SEVERITY_INFO, "Started tack. %d tack points", (int)tack_points.size());
                     _is_tack = true;
                 }
-
-                const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
-                calc_steering_to_heading(desired_heading_cd, turn_rate);
-
             } else {
-                //gcs().send_text(MAV_SEVERITY_INFO, "Tack point %d", rover.mode_auto.mission.get_current_nav_index());
-                //gcs().send_text(MAV_SEVERITY_INFO, "Total point %d", rover.mode_auto.mission.num_commands());
                 // run through all tack points normally (assuming none is in the deadzone). when finished all tack points:
                 if(rover.mode_auto.mission.get_current_nav_index() == rover.mode_auto.mission.num_commands()-1 && _is_tack){
                     gcs().send_text(MAV_SEVERITY_INFO, "Finished Tack!");
@@ -441,7 +435,7 @@ void Mode::navigate_to_waypoint()
 
                     // go back to location before tack
                     rover.mode_auto.mission.set_current_cmd(_index_tack_start);
-
+                    
                     // remove tack points from mission
                     rover.mode_auto.mission.truncate(_mission_size);
 
@@ -449,6 +443,12 @@ void Mode::navigate_to_waypoint()
 
                     _is_tack = false;
                 }
+            }
+
+            if(_is_tack){
+                const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
+                calc_steering_to_heading(desired_heading_cd, turn_rate);
+            } else {
                 calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
             }
 
