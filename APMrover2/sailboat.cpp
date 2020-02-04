@@ -902,6 +902,9 @@ std::vector<Location> Sailboat::calc_location_from_NE(std::vector<Vector2f> poin
         local.push_back(tmp);
     }
 
+    local.push_back(rover.g2.wp_nav.get_destination());
+    local.push_back(rover.g2.wp_nav.get_destination());
+
     return local;
 }
 
