@@ -188,6 +188,22 @@ void Rover::Log_Write_Metrics2()
                         (double)rover.g2.metrics.get_IAE_IADC_speed());
 }
 
+void Rover::Log_Write_uff1()
+{
+    logger.Write("UFF1", "TimeUS,Lat,Lon,R,P,Y,WdirAbs,WdirRel,WspdTrue,WspdApp",
+                        "sDUddhmmmm", "FGGBBB0000", "QLLccCffff",
+                        AP_HAL::micros64(),
+                        loc.lat,
+                        loc.lng,
+                        (int16_t)(degrees(euler.x)*100),
+        				(int16_t)(degrees(euler.y)*100),
+				        (uint16_t)(wrap_360_cd(degrees(euler.z)*100)),
+                        (double)wind_dir_abs,
+                        (double)wind_dir_rel,
+                        (double)wind_speed_true,
+                        (double)wind_speed_apparent);
+}
+
 void Rover::Log_Write_External_Current()
 {
     // only log sail if present
@@ -320,6 +336,7 @@ void Rover::Log_Write_Metrics(){
     Log_Write_Metrics2();
     Log_Write_External_Current();
     Log_Write_Actuators_Status();
+    Log_Write_uff1();
 }
 
 // type and unit information can be found in
