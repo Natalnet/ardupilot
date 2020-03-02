@@ -384,10 +384,23 @@ void Mode::navigate_to_waypoint()
                 desired_heading_cd = g2.sailboat.calc_heading(desired_heading_cd);
                 // use pivot turn rate for tacks
                 const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
+                // heading controller
                 calc_steering_to_heading(desired_heading_cd, turn_rate);
             } else {
-                // call turn rate steering controller
-                calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
+                // decide wich waypoint following to use
+                switch (g2.sailboat.get_waypoint_type()) {
+                    case (g2.sailboat.L_ONE): {
+                        // call turn rate steering controller (L1 controller)
+                        calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
+                        break;
+                    }
+
+                    case (g2.sailboat.HEADING): {
+                        // heading controller
+                        calc_steering_to_heading(desired_heading_cd, g2.wp_nav.get_pivot_rate());
+                        break;
+                    }
+                }
             }
 
             break;
@@ -417,7 +430,7 @@ void Mode::navigate_to_waypoint()
                 for(std::vector<int>::size_type i = 0; i < tack_points.size(); i++){
                     cmd.content.location = tack_points.at(i);
                     if(rover.mode_auto.mission.add_cmd(cmd)){
-                        gcs().send_text(MAV_SEVERITY_INFO, "Added tack %d", (int)i);
+                        //gcs().send_text(MAV_SEVERITY_INFO, "Added tack %d", (int)i);
                     }
                 }
 
@@ -446,10 +459,25 @@ void Mode::navigate_to_waypoint()
             }
 
             if(_is_tack){
+                //calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
                 const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
+                // heading controller
                 calc_steering_to_heading(desired_heading_cd, turn_rate);
             } else {
-                calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
+                // decide wich waypoint following to use
+                switch (g2.sailboat.get_waypoint_type()) {
+                    case (g2.sailboat.L_ONE): {
+                        // call turn rate steering controller (L1 controller)
+                        calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
+                        break;
+                    }
+
+                    case (g2.sailboat.HEADING): {
+                        // heading controller
+                        calc_steering_to_heading(desired_heading_cd, g2.wp_nav.get_pivot_rate());
+                        break;
+                    }
+                }
             }
 
             break;

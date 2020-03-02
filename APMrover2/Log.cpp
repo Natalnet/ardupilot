@@ -190,6 +190,24 @@ void Rover::Log_Write_Metrics2()
 
 void Rover::Log_Write_uff1()
 {
+    Vector3f euler;
+    struct Location loc;
+    if (!ahrs.get_secondary_attitude(euler) || !ahrs.get_secondary_position(loc)) {
+        return;
+    }
+
+    // get wind direction
+    float wind_dir_abs = logger.quiet_nanf();
+    float wind_dir_rel = logger.quiet_nanf();
+    float wind_speed_true = logger.quiet_nanf();
+    float wind_speed_apparent = logger.quiet_nanf();
+    if (rover.g2.windvane.enabled()) {
+        wind_dir_abs = degrees(g2.windvane.get_true_wind_direction_rad());
+        wind_dir_rel = degrees(g2.windvane.get_apparent_wind_direction_rad());
+        wind_speed_true = g2.windvane.get_true_wind_speed();
+        wind_speed_apparent = g2.windvane.get_apparent_wind_speed();
+    }
+
     logger.Write("UFF1", "TimeUS,Lat,Lon,R,P,Y,WdirAbs,WdirRel,WspdTrue,WspdApp",
                         "sDUddhmmmm", "FGGBBB0000", "QLLccCffff",
                         AP_HAL::micros64(),
@@ -377,6 +395,7 @@ void Rover::Log_Write_Vehicle_Startup_Messages() {}
 void Rover::Log_Write_Metrics() {}
 void Rover::Log_Write_Metrics1() {}
 void Rover::Log_Write_Metrics2() {}
+void Rover::Log_Write_uff1() {}
 void Rover::Log_Write_External_Current() {}
 void Rover::Log_Write_Actuators_Status() {}
 

@@ -185,6 +185,15 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("TACK_THETAT", 18, Sailboat, tack_theta_t, 60.0f),
 
+    // @Param: WAYP_TYPE
+    // @DisplayName: Type of waypoint following
+    // @Description: 0 - L1 controller, 1 - heading controller
+    // @Units: degrees
+    // @Range: 0 10
+    // @Increment: 0.1
+    // @User: Standard
+    AP_GROUPINFO("WAYP_TYPE", 19, Sailboat, waypoint_follow_type, 0.0f),
+
     AP_GROUPEND
 };
 
@@ -615,7 +624,7 @@ float Sailboat::calc_heading(float desired_heading_cd)
 
     // if tack triggered, calculate target heading
     if (should_tack && (now - tack_clear_ms) > TACK_RETRY_TIME_MS) {
-        std::vector<Location> tack_points = calc_tack_points(desired_heading_rad);
+        // std::vector<Location> tack_points = calc_tack_points(desired_heading_rad);
         gcs().send_text(MAV_SEVERITY_INFO, "Sailboat: Tacking");
 
         // calculate target heading for the new tack

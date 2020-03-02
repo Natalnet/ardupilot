@@ -94,6 +94,12 @@ public:
         DELIBERATIVE = 1
     };
 
+    // states of SAIL_TACK_TYPE parameter and sail_tack_type variable
+    enum SailboatWaypointType : uint8_t {
+        L_ONE  = 0,
+        HEADING = 1
+    };
+
     // set state of motor
     // if report_failure is true a message will be sent to all GCSs
     void set_motor_state(UseMotor state, bool report_failure = true);
@@ -104,8 +110,11 @@ public:
     // return sailboat loiter radius
     float get_loiter_radius() const {return loit_radius;}
 
-    // return sailboat loiter radius
+    // return sailboat tack type
     AP_Int8 get_tack_type() const {return tack_type;}
+
+    // return sailboat waypoint following type
+    AP_Int8 get_waypoint_type() const {return waypoint_follow_type;}
 
     // calculate the heading to sail on if we cant go upwind
     std::vector<Location> calc_tack_points(float desired_heading_cd);
@@ -145,6 +154,7 @@ private:
     AP_Float sail_extr_t;
     AP_Float sail_polar_t;
     AP_Int8 tack_type;
+    AP_Int8 waypoint_follow_type;
     AP_Float tack_d_t;
     AP_Float tack_theta_t;
 
