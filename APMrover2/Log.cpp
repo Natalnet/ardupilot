@@ -188,6 +188,19 @@ void Rover::Log_Write_Metrics2()
                         (double)rover.g2.metrics.get_IAE_IADC_speed());
 }
 
+void Rover::Log_Write_Metrics3()
+{
+    // only log sail if present
+    if (!rover.g2.sailboat.sail_enabled()) {
+        return;
+    }
+
+    logger.Write("MTC3", "TimeUS,NumberTacks",
+                        "sm", "F0", "Qf",
+                        AP_HAL::micros64(),
+                        (double)g2.metrics.get_number_of_tacks());
+}
+
 void Rover::Log_Write_uff1()
 {
     Vector3f euler;
@@ -350,11 +363,23 @@ void Rover::Log_Write_Vehicle_Startup_Messages()
 }
 
 void Rover::Log_Write_Metrics(){
+    // reset metrics (when it gets number 2)
+    if(mode_auto.mission.get_current_nav_index() == 1 && g2.metrics.isClearMetrics){
+        g2.metrics.reset_metrics();
+        g2.metrics.isClearMetrics = false;
+        gcs().send_text(MAV_SEVERITY_WARNING, "CLEARED METRICS!!!");
+    }
+
+    if(rover.mode_auto.mission.get_current_nav_index() != 1){
+        g2.metrics.isClearMetrics = true;
+    }
+
     Log_Write_Metrics1();
     Log_Write_Metrics2();
+    Log_Write_Metrics3();
     Log_Write_External_Current();
     Log_Write_Actuators_Status();
-    Log_Write_uff1();
+    //Log_Write_uff1();
 }
 
 // type and unit information can be found in
@@ -395,6 +420,7 @@ void Rover::Log_Write_Vehicle_Startup_Messages() {}
 void Rover::Log_Write_Metrics() {}
 void Rover::Log_Write_Metrics1() {}
 void Rover::Log_Write_Metrics2() {}
+void Rover::Log_Write_Metrics3() {}
 void Rover::Log_Write_uff1() {}
 void Rover::Log_Write_External_Current() {}
 void Rover::Log_Write_Actuators_Status() {}

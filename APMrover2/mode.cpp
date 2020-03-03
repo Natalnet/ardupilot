@@ -410,17 +410,21 @@ void Mode::navigate_to_waypoint()
 
             // im assuming this only run once
             if (g2.sailboat.use_indirect_route(desired_heading_cd) && !_is_tack) {
-                // calculate tack points (once)
-                std::vector<Location> tack_points = g2.sailboat.calc_tack_points(desired_heading_cd);
-
                 // calculate mission size before adding tack points
                 _mission_size = rover.mode_auto.mission.num_commands();
 
-                // calculate total number of tack points
-                _tack_points_size = tack_points.size();
+                //gcs().send_text(MAV_SEVERITY_INFO, "NUMBER OF COMMANDS = %d ", (int)_mission_size);
 
                 // store the index when the sailboat started to tack
                 _index_tack_start = rover.mode_auto.mission.get_current_nav_index();
+
+                //gcs().send_text(MAV_SEVERITY_INFO, "CURRENT INDEX COMMAND = %d", (int)_index_tack_start);
+
+                // calculate tack points (once)
+                std::vector<Location> tack_points = g2.sailboat.calc_tack_points(desired_heading_cd);
+
+                // calculate total number of tack points
+                _tack_points_size = tack_points.size();
 
                 // add tack points to mission
                 AP_Mission::Mission_Command cmd;
@@ -438,19 +442,29 @@ void Mode::navigate_to_waypoint()
                 if(rover.mode_auto.mission.set_current_cmd(_mission_size + 1)){
                     gcs().send_text(MAV_SEVERITY_INFO, "Started tack. %d tack points", (int)tack_points.size());
                     _is_tack = true;
+                    _current_mission_index = rover.mode_auto.mission.get_current_nav_index();
                 }
+
             } else {
+                // count number of tacks
+                if((rover.mode_auto.mission.get_current_nav_index() != _current_mission_index) && _is_tack){
+                    rover.g2.metrics.increment_tack();
+                    _current_mission_index = rover.mode_auto.mission.get_current_nav_index();
+                }
+
                 // run through all tack points normally (assuming none is in the deadzone). when finished all tack points:
                 if(rover.mode_auto.mission.get_current_nav_index() == rover.mode_auto.mission.num_commands()-1 && _is_tack){
-                    gcs().send_text(MAV_SEVERITY_INFO, "Finished Tack!");
+                    gcs().send_text(MAV_SEVERITY_WARNING, "Finished Tack!");
 
                     rover.mode_auto.mission.stop();
 
                     // go back to location before tack
-                    rover.mode_auto.mission.set_current_cmd(_index_tack_start);
+                    rover.mode_auto.mission.set_current_cmd(_index_tack_start+1);
                     
                     // remove tack points from mission
                     rover.mode_auto.mission.truncate(_mission_size);
+
+                    // gcs().send_text(MAV_SEVERITY_WARNING, "CURRENT MISSION SIZE = %d", (int)rover.mode_auto.mission.num_commands());
 
                     rover.mode_auto.mission.resume();
 

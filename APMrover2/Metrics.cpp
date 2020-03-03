@@ -126,3 +126,21 @@ void Metrics::get_error_speed(){
 void Metrics::get_error_steering(){
     _error_steering = rover.g2.attitude_control.get_steering_rate_pid().get_error();
 }
+
+void Metrics::increment_tack(){
+    _number_of_tacks++;
+}
+
+void Metrics::reset_metrics(){
+    _IAE_speed = 0;
+    _ISE_speed = 0;
+    _ITAE_speed = 0;
+    _ITSE_speed = 0;
+
+    _IAE_steering = 0;
+    _ISE_steering = 0;
+    _ITAE_steering = 0;
+    _ITSE_steering = 0;
+
+    _number_of_tacks = 0;
+}

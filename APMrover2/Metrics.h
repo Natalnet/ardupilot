@@ -100,6 +100,14 @@ public:
     float get_IADC_speed() {return _IADC_speed;}
     float get_IAE_IADC_speed() {return _IAE_IADC_speed;}    
 
+    void reset_metrics();
+
+    void increment_tack();
+
+    float get_number_of_tacks() {return _number_of_tacks;}
+
+    bool isClearMetrics = true;
+
 private:
 
     // feedback control errors
@@ -153,4 +161,6 @@ private:
     // IAE_IADC variables
     float _IAE_IADC_speed;
     float _IAE_IADC_steering;
+
+    float _number_of_tacks;
 };

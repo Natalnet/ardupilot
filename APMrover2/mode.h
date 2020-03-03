@@ -204,6 +204,8 @@ protected:
     uint16_t _tack_points_size;
     uint16_t _index_tack_start;
     bool _is_tack;
+    uint16_t _current_mission_index;
+
 };
 
 

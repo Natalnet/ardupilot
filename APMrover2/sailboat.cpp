@@ -389,7 +389,7 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
                     // constrain control output so it dosent explode (convergence not garanteed)
                     _pid_offset_speed = constrain_float(_pid_offset_speed, -10.0f ,10.0f);
 
-                    gcs().send_text(MAV_SEVERITY_INFO, "CONTROL SIGNAL ACC = %5.3f", (double)_pid_offset_speed);
+                    //gcs().send_text(MAV_SEVERITY_INFO, "CONTROL SIGNAL ACC = %5.3f", (double)_pid_offset_speed);
 
                     // update speed of last step
                     _speed_last = speed;
@@ -626,6 +626,7 @@ float Sailboat::calc_heading(float desired_heading_cd)
     if (should_tack && (now - tack_clear_ms) > TACK_RETRY_TIME_MS) {
         // std::vector<Location> tack_points = calc_tack_points(desired_heading_rad);
         gcs().send_text(MAV_SEVERITY_INFO, "Sailboat: Tacking");
+        rover.g2.metrics.increment_tack();
 
         // calculate target heading for the new tack
         switch (current_tack) {
@@ -665,7 +666,6 @@ float Sailboat::calc_heading(float desired_heading_cd)
     } else {
         return degrees(right_no_go_heading_rad) * 100.0f;
     }
-
 }
 
 // set state of motor
@@ -895,7 +895,6 @@ Vector2f Sailboat::projection(Vector2f point, Vector2f line){
     out.y = line.x * out.x + line.y;
 
     return out;
-
 }
 
 std::vector<Location> Sailboat::calc_location_from_NE(std::vector<Vector2f> points_NE){
@@ -919,5 +918,4 @@ std::vector<Location> Sailboat::calc_location_from_NE(std::vector<Vector2f> poin
 
 std::vector<Location> Sailboat::calc_tack_points(float desired_heading_cd){
     return calc_location_from_NE(calc_deliberative_tack_points_NE(desired_heading_cd));
-
 }
