@@ -764,7 +764,7 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_h
 
     float alpha_p = origin.get_bearing_to(destination) * 0.01f;
 
-    float tan_theta_t = tan(radians(theta_t));
+    float tan_theta_t = tanf(radians(theta_t));
 
     // alpha_aw -> angle of attack of apparent wind; it basically says wich side is better to start tacking
     if (alpha_aw < alpha_p){
@@ -776,22 +776,22 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_h
     line_B.y = y0 - (line_B.x * x0);
 
     // find distance from origin in line_A that has a distance of d_t from line_B
-    float H = d_t/sin(radians(theta_t));
+    float H = d_t/sinf(radians(theta_t));
 
-    float a = 1 + pow(line_B.x,2);
+    float a = 1 + powf(line_B.x,2);
     float b = (-2)*x0 + 2*line_B.x*line_B.y - 2*line_B.x*y0;
-    float c = pow(x0,2) + pow(y0,2) + pow(line_B.y,2) - 2*y0*line_B.y - pow(H,2);
+    float c = powf(x0,2) + powf(y0,2) + powf(line_B.y,2) - 2*y0*line_B.y - powf(H,2);
 
-    float delta = pow(b,2) - 4*a*c;
+    float delta = powf(b,2) - 4*a*c;
 
     Vector2f t1;
     Vector2f t2;
 
     // find roots
-    t1.x = (-b + sqrt(delta))/(2*a);
+    t1.x = (-b + sqrtf(delta))/(2*a);
     t1.y = line_B.x*t1.x + line_B.y;
 
-    t2.x = (-b - sqrt(delta))/(2*a);
+    t2.x = (-b - sqrtf(delta))/(2*a);
     t2.y = line_B.x*t2.x + line_B.y;
 
     // distance from root points to destination
@@ -830,7 +830,7 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_h
     line_L2.x = line_A.x;
 
     // number of tack points (distance from origin to destination divided by d_p0)
-    float n_t = floor(get_distance(origin_NE, destination_NE)/d_p0);
+    float n_t = floorf(get_distance(origin_NE, destination_NE)/d_p0);
 
     Vector2f step;
     // step in x and y direction
