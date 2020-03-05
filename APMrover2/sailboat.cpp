@@ -2,7 +2,7 @@
 
 #define SAILBOAT_AUTO_TACKING_TIMEOUT_MS 5000   // tacks in auto mode timeout if not successfully completed within this many milliseconds
 #define SAILBOAT_TACKING_ACCURACY_DEG 10        // tack is considered complete when vehicle is within this many degrees of target tack angle
-#define SAILBOAT_NOGO_PAD 15                    // deg, the no go zone is padded by this much when deciding if we should use the Sailboat heading controller
+//#define SAILBOAT_NOGO_PAD 15                    // deg, the no go zone is padded by this much when deciding if we should use the Sailboat heading controller
 #define TACK_RETRY_TIME_MS 5000                 // Can only try another auto mode tack this many milliseconds after the last is cleared (either competed or timed-out)
 /*
 To Do List
@@ -193,6 +193,15 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @Increment: 0.1
     // @User: Standard
     AP_GROUPINFO("WAYP_TYPE", 19, Sailboat, waypoint_follow_type, 0.0f),
+
+    // @Param: NOGO_PAD
+    // @DisplayName: Aditional angle when reactive tacking (sail_no_go_angle + sail_nogo_pad)
+    // @Description: angle
+    // @Units: degrees
+    // @Range: 0 30
+    // @Increment: 0.1
+    // @User: Standard
+    AP_GROUPINFO("NOGO_PAD", 20, Sailboat, sail_nogo_pad, 15.0f),
 
     AP_GROUPEND
 };
@@ -619,8 +628,8 @@ float Sailboat::calc_heading(float desired_heading_cd)
     }
 
     // calculate left and right no go headings looking upwind, Port tack heading is left no-go, STBD tack is right of no-go
-    const float left_no_go_heading_rad = wrap_2PI(true_wind_rad + radians(sail_no_go + SAILBOAT_NOGO_PAD));
-    const float right_no_go_heading_rad = wrap_2PI(true_wind_rad - radians(sail_no_go + SAILBOAT_NOGO_PAD));
+    const float left_no_go_heading_rad = wrap_2PI(true_wind_rad + radians(sail_no_go + sail_nogo_pad));
+    const float right_no_go_heading_rad = wrap_2PI(true_wind_rad - radians(sail_no_go + sail_nogo_pad));
 
     // if tack triggered, calculate target heading
     if (should_tack && (now - tack_clear_ms) > TACK_RETRY_TIME_MS) {

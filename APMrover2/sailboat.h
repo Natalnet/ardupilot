@@ -157,6 +157,7 @@ private:
     AP_Int8 waypoint_follow_type;
     AP_Float tack_d_t;
     AP_Float tack_theta_t;
+    AP_Float sail_nogo_pad;
 
     RC_Channel *channel_mainsail;   // rc input channel for controlling mainsail
     bool currently_tacking;         // true when sailboat is in the process of tacking to a new heading
