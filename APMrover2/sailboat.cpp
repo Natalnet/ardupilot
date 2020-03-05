@@ -2,7 +2,7 @@
 
 #define SAILBOAT_AUTO_TACKING_TIMEOUT_MS 5000   // tacks in auto mode timeout if not successfully completed within this many milliseconds
 #define SAILBOAT_TACKING_ACCURACY_DEG 10        // tack is considered complete when vehicle is within this many degrees of target tack angle
-#define SAILBOAT_NOGO_PAD 10                    // deg, the no go zone is padded by this much when deciding if we should use the Sailboat heading controller
+#define SAILBOAT_NOGO_PAD 15                    // deg, the no go zone is padded by this much when deciding if we should use the Sailboat heading controller
 #define TACK_RETRY_TIME_MS 5000                 // Can only try another auto mode tack this many milliseconds after the last is cleared (either competed or timed-out)
 /*
 To Do List
@@ -547,7 +547,7 @@ bool Sailboat::use_indirect_route(float desired_heading_cd) const
 
     // check if desired heading is in the no go zone, if it is we can't go direct
     // pad no go zone, this allows use of heading controller rather than L1 when close to the wind
-    return fabsf(wrap_PI(rover.g2.windvane.get_true_wind_direction_rad() - desired_heading_rad)) <= radians(sail_no_go + SAILBOAT_NOGO_PAD);
+    return fabsf(wrap_PI(rover.g2.windvane.get_true_wind_direction_rad() - desired_heading_rad)) <= radians(sail_no_go);
 }
 
 // if we can't sail on the desired heading then we should pick the best heading that we can sail on
@@ -619,8 +619,8 @@ float Sailboat::calc_heading(float desired_heading_cd)
     }
 
     // calculate left and right no go headings looking upwind, Port tack heading is left no-go, STBD tack is right of no-go
-    const float left_no_go_heading_rad = wrap_2PI(true_wind_rad + radians(sail_no_go));
-    const float right_no_go_heading_rad = wrap_2PI(true_wind_rad - radians(sail_no_go));
+    const float left_no_go_heading_rad = wrap_2PI(true_wind_rad + radians(sail_no_go + SAILBOAT_NOGO_PAD));
+    const float right_no_go_heading_rad = wrap_2PI(true_wind_rad - radians(sail_no_go + SAILBOAT_NOGO_PAD));
 
     // if tack triggered, calculate target heading
     if (should_tack && (now - tack_clear_ms) > TACK_RETRY_TIME_MS) {
