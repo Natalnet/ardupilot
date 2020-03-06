@@ -203,6 +203,15 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @User: Standard
     AP_GROUPINFO("NOGO_PAD", 20, Sailboat, sail_nogo_pad, 15.0f),
 
+    // @Param: THRSH_DTACK
+    // @DisplayName: thershold heading error to change from L1 controller to heading control during deliberative tack
+    // @Description: angle
+    // @Units: degrees
+    // @Range: 0 180
+    // @Increment: 0.1
+    // @User: Standard
+    AP_GROUPINFO("THRSH_DTACK", 21, Sailboat, sail_threshold_dtack, 30.0f),
+
     AP_GROUPEND
 };
 
@@ -316,7 +325,7 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
     } else {
     	switch (sail_control_type) {
 
-    		// standard linear control
+    		// standard linear interpolation control
     		case (LINEAR): {
 
     			// + is wind over starboard side, - is wind over port side, but as the sails are sheeted the same on each side it makes no difference so take abs
@@ -346,7 +355,7 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
     			break;
     		}
 
-    		//TODO: use a cardioid function to approximate the polar diagram. speed control trying to get the speed given by the polar diagram
+    		// modified extremum seeking sail control
     		case (POLAR_DIAGRAM_CARD): {
 
                 // get current time
@@ -381,7 +390,7 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
                         speed = 0.0f;
                     }
 
-                    // calc first difference of speed and sail angle
+                    // calc first difference of speed and sail angle (last step)
                     float du = speed - _speed_last;
                     float ds = _sail_last - _sail_last_last;
 
@@ -397,8 +406,6 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
 
                     // constrain control output so it dosent explode (convergence not garanteed)
                     _pid_offset_speed = constrain_float(_pid_offset_speed, -10.0f ,10.0f);
-
-                    //gcs().send_text(MAV_SEVERITY_INFO, "CONTROL SIGNAL ACC = %5.3f", (double)_pid_offset_speed);
 
                     // update speed of last step
                     _speed_last = speed;
@@ -448,14 +455,14 @@ void Sailboat::get_throttle_and_mainsail_out(float desired_speed, float &throttl
                     mainsail_out = constrain_float((_sail_last + step), 0.0f ,100.0f);
 
                     // update speed of last step
-                     _speed_last = speed;
+                    _speed_last = speed;
 
-                     // update sail angle of last steps and the latter step
-                     _sail_last_last = _sail_last;
-                     _sail_last = mainsail_out;
+                    // update sail angle of last step and the step before that
+                    _sail_last_last = _sail_last;
+                    _sail_last = mainsail_out;
 
-                     // update time of last step
-                     _extr_turn_last_ms = now;
+                    // update time of last step
+                    _extr_turn_last_ms = now;
 
                 } else {
 
@@ -810,7 +817,7 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_h
     // (x_t,y_t) is the first tack point
     local.push_back(t);
 
-    // project p_t in line A (create struct Line (a and b))
+    // project p_t in line A
     Vector2f p_p = projection(t, line_A);
 
     // distance between origin and p_p
@@ -833,6 +840,7 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_h
     float n_t = floorf(get_distance(origin_NE, destination_NE)/d_p0);
 
     Vector2f step;
+
     // step in x and y direction
     step.x = (p_p.x - x0) * 2;
     step.y = (p_p.y - y0) * 2;
@@ -861,12 +869,6 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_h
             local.push_back(p_tmp);
         }
     }
-
-    // std::vector<Location> tmp = calc_location_from_NE(local);
-
-    // for(std::vector<int>::size_type i = 0; i < tmp.size(); i++){
-    //     gcs().send_text(MAV_SEVERITY_INFO, "Tack lat lng %d = (%d, %d)", (int)i, tmp.at(i).lat, tmp.at(i).lng);
-    // }
 
     return local;
 }

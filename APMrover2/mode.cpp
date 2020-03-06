@@ -380,22 +380,26 @@ void Mode::navigate_to_waypoint()
         case (g2.sailboat.REACTIVE): {
 
             if (g2.sailboat.use_indirect_route(desired_heading_cd)) {
+
                 // sailboats use heading controller when tacking upwind
                 desired_heading_cd = g2.sailboat.calc_heading(desired_heading_cd);
+
                 // use pivot turn rate for tacks
                 const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
+
                 // heading controller
                 calc_steering_to_heading(desired_heading_cd, turn_rate);
             } else {
                 // decide wich waypoint following to use
                 switch (g2.sailboat.get_waypoint_type()) {
                     case (g2.sailboat.L_ONE): {
+
                         // call turn rate steering controller (L1 controller)
                         calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
                         break;
                     }
-
                     case (g2.sailboat.HEADING): {
+
                         // heading controller
                         calc_steering_to_heading(desired_heading_cd, g2.wp_nav.get_pivot_rate());
                         break;
@@ -410,15 +414,12 @@ void Mode::navigate_to_waypoint()
 
             // im assuming this only run once
             if (g2.sailboat.use_indirect_route(desired_heading_cd) && !_is_tack) {
+
                 // calculate mission size before adding tack points
                 _mission_size = rover.mode_auto.mission.num_commands();
 
-                //gcs().send_text(MAV_SEVERITY_INFO, "NUMBER OF COMMANDS = %d ", (int)_mission_size);
-
                 // store the index when the sailboat started to tack
                 _index_tack_start = rover.mode_auto.mission.get_current_nav_index();
-
-                //gcs().send_text(MAV_SEVERITY_INFO, "CURRENT INDEX COMMAND = %d", (int)_index_tack_start);
 
                 // calculate tack points (once)
                 std::vector<Location> tack_points = g2.sailboat.calc_tack_points(desired_heading_cd);
@@ -434,7 +435,6 @@ void Mode::navigate_to_waypoint()
                 for(std::vector<int>::size_type i = 0; i < tack_points.size(); i++){
                     cmd.content.location = tack_points.at(i);
                     if(rover.mode_auto.mission.add_cmd(cmd)){
-                        //gcs().send_text(MAV_SEVERITY_INFO, "Added tack %d", (int)i);
                     }
                 }
 
@@ -464,8 +464,6 @@ void Mode::navigate_to_waypoint()
                     // remove tack points from mission
                     rover.mode_auto.mission.truncate(_mission_size);
 
-                    // gcs().send_text(MAV_SEVERITY_WARNING, "CURRENT MISSION SIZE = %d", (int)rover.mode_auto.mission.num_commands());
-
                     rover.mode_auto.mission.resume();
 
                     _is_tack = false;
@@ -473,20 +471,30 @@ void Mode::navigate_to_waypoint()
             }
 
             if(_is_tack){
-                //calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
-                const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
-                // heading controller
-                calc_steering_to_heading(desired_heading_cd, turn_rate);
+
+                // if the heading error is greater then a set value (and is tacking) use the heading controller. else, use the L1 controller
+                if(fabsf(wrap_PI(radians(rover.g2.wp_nav.wp_bearing_cd() * 0.01f) - rover.ahrs.yaw)) > fabsf(radians(rover.g2.sailboat.get_threshold_dtack()))){
+
+                    const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
+
+                    // heading controller
+                    calc_steering_to_heading(desired_heading_cd, turn_rate);
+
+                } else {
+                    calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
+                }
+
             } else {
                 // decide wich waypoint following to use
                 switch (g2.sailboat.get_waypoint_type()) {
                     case (g2.sailboat.L_ONE): {
+
                         // call turn rate steering controller (L1 controller)
                         calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
                         break;
                     }
-
                     case (g2.sailboat.HEADING): {
+
                         // heading controller
                         calc_steering_to_heading(desired_heading_cd, g2.wp_nav.get_pivot_rate());
                         break;

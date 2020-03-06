@@ -119,6 +119,9 @@ public:
     // calculate the heading to sail on if we cant go upwind
     std::vector<Location> calc_tack_points(float desired_heading_cd);
 
+    // return sailboat waypoint following type
+    AP_Float get_threshold_dtack() const {return sail_threshold_dtack;}
+
 private:
 
     // true if motor is on to assist with slow tack
@@ -158,6 +161,7 @@ private:
     AP_Float tack_d_t;
     AP_Float tack_theta_t;
     AP_Float sail_nogo_pad;
+    AP_Float sail_threshold_dtack;
 
     RC_Channel *channel_mainsail;   // rc input channel for controlling mainsail
     bool currently_tacking;         // true when sailboat is in the process of tacking to a new heading
