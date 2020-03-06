@@ -401,7 +401,7 @@ void Mode::navigate_to_waypoint()
                     case (g2.sailboat.HEADING): {
 
                         // heading controller
-                        calc_steering_to_heading(desired_heading_cd, g2.wp_nav.get_pivot_rate());
+                        calc_steering_to_heading(desired_heading_cd, 0.0f);
                         break;
                     }
                 }
@@ -475,12 +475,12 @@ void Mode::navigate_to_waypoint()
                 // if the heading error is greater then a set value (and is tacking) use the heading controller. else, use the L1 controller
                 if(fabsf(wrap_PI(radians(rover.g2.wp_nav.wp_bearing_cd() * 0.01f) - rover.ahrs.yaw)) > fabsf(radians(rover.g2.sailboat.get_threshold_dtack()))){
 
-                    const float turn_rate = g2.sailboat.tacking() ? g2.wp_nav.get_pivot_rate() : 0.0f;
-
                     // heading controller
-                    calc_steering_to_heading(desired_heading_cd, turn_rate);
+                    calc_steering_to_heading(desired_heading_cd, g2.wp_nav.get_pivot_rate());
 
                 } else {
+
+                    // L1 controller
                     calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
                 }
 
@@ -496,7 +496,7 @@ void Mode::navigate_to_waypoint()
                     case (g2.sailboat.HEADING): {
 
                         // heading controller
-                        calc_steering_to_heading(desired_heading_cd, g2.wp_nav.get_pivot_rate());
+                        calc_steering_to_heading(desired_heading_cd, 0.0f);
                         break;
                     }
                 }
