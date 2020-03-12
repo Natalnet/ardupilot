@@ -392,16 +392,18 @@ void Mode::navigate_to_waypoint()
             } else {
                 // decide wich waypoint following to use
                 switch (g2.sailboat.get_waypoint_type()) {
-                    case (g2.sailboat.L_ONE): {
 
+                    case (g2.sailboat.L_ONE): {
                         // call turn rate steering controller (L1 controller)
                         calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
+
                         break;
                     }
+                    
                     case (g2.sailboat.HEADING): {
-
                         // heading controller
                         calc_steering_to_heading(desired_heading_cd, 0.0f);
+
                         break;
                     }
                 }
@@ -471,15 +473,12 @@ void Mode::navigate_to_waypoint()
             }
 
             if(_is_tack){
-
                 // if the heading error is greater then a set value (and is tacking) use the heading controller. else, use the L1 controller
                 if(fabsf(wrap_PI(radians(rover.g2.wp_nav.wp_bearing_cd() * 0.01f) - rover.ahrs.yaw)) > fabsf(radians(rover.g2.sailboat.get_threshold_dtack()))){
-
                     // heading controller
                     calc_steering_to_heading(desired_heading_cd, g2.wp_nav.get_pivot_rate());
 
                 } else {
-
                     // L1 controller
                     calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
                 }
@@ -487,16 +486,17 @@ void Mode::navigate_to_waypoint()
             } else {
                 // decide wich waypoint following to use
                 switch (g2.sailboat.get_waypoint_type()) {
-                    case (g2.sailboat.L_ONE): {
 
+                    case (g2.sailboat.L_ONE): {
                         // call turn rate steering controller (L1 controller)
                         calc_steering_from_turn_rate(g2.wp_nav.get_turn_rate_rads(), desired_speed, g2.wp_nav.get_reversed());
+
                         break;
                     }
                     case (g2.sailboat.HEADING): {
-
                         // heading controller
                         calc_steering_to_heading(desired_heading_cd, 0.0f);
+
                         break;
                     }
                 }

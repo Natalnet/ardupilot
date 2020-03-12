@@ -849,6 +849,27 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_h
     Vector2f p0_L1 = projection(p_p, line_L1);
     Vector2f p0_L2 = projection(p_p, line_L2);
 
+    // get the bearing from p0_L1 to origin
+    Location tmp;
+    tmp = rover.g2.wp_nav.get_origin();
+    tmp.offset(p0_L1.x, p0_L1.y);
+    float bearing_L1 = origin.get_bearing_to(tmp) * 0.01f;
+
+    // get the bearing from p0_L2 to origin
+    tmp = rover.g2.wp_nav.get_origin();
+    tmp.offset(p0_L2.x, p0_L2.y);
+    float bearing_L2 = origin.get_bearing_to(tmp) * 0.01f;
+
+    bool decider;
+
+    // see which one is greater
+    if(bearing_L1 < bearing_L2){
+        decider = true;
+    } else {
+        decider = false;
+    }
+    // decide which point is first base on that
+
     // run through each line, advancing delta_x,delta_y and find the tack points
     for (int z = 1; z < n_t; z++){
         Vector2f step_tmp;
@@ -858,15 +879,28 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_h
 
         Vector2f p_tmp;
 
-        // even steps
-        if (z % 2 == 0){
-            p_tmp.x = p0_L1.x + step_tmp.x;
-            p_tmp.y = p0_L1.y + step_tmp.y;
-            local.push_back(p_tmp);
+        if (decider){
+            // even steps
+            if (z % 2 != 0){
+                p_tmp.x = p0_L1.x + step_tmp.x;
+                p_tmp.y = p0_L1.y + step_tmp.y;
+                local.push_back(p_tmp);
+            } else {
+                p_tmp.x = p0_L2.x + step_tmp.x;
+                p_tmp.y = p0_L2.y + step_tmp.y;
+                local.push_back(p_tmp);
+            }
         } else {
-            p_tmp.x = p0_L2.x + step_tmp.x;
-            p_tmp.y = p0_L2.y + step_tmp.y;
-            local.push_back(p_tmp);
+            // even steps
+            if (z % 2 == 0){
+                p_tmp.x = p0_L1.x + step_tmp.x;
+                p_tmp.y = p0_L1.y + step_tmp.y;
+                local.push_back(p_tmp);
+            } else {
+                p_tmp.x = p0_L2.x + step_tmp.x;
+                p_tmp.y = p0_L2.y + step_tmp.y;
+                local.push_back(p_tmp);
+            }
         }
     }
 

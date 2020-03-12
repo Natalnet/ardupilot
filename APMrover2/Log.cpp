@@ -330,13 +330,13 @@ void Rover::Log_Write_Vehicle_Startup_Messages()
 
 void Rover::Log_Write_Metrics(){
     // reset metrics (when it gets number 2)
-    if(mode_auto.mission.get_current_nav_index() == 1 && g2.metrics.isClearMetrics){
+    if(mode_auto.mission.get_current_nav_index() == 2 && g2.metrics.isClearMetrics){
         g2.metrics.reset_metrics();
         g2.metrics.isClearMetrics = false;
         gcs().send_text(MAV_SEVERITY_WARNING, "CLEARED METRICS!!!");
     }
 
-    if(rover.mode_auto.mission.get_current_nav_index() != 1){
+    if(rover.mode_auto.mission.get_current_nav_index() != 2){
         g2.metrics.isClearMetrics = true;
     }
 
