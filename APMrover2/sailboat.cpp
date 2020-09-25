@@ -75,7 +75,7 @@ const AP_Param::GroupInfo Sailboat::var_info[] = {
     // @Range: 0 90
     // @Increment: 1
     // @User: Standard
-    AP_GROUPINFO("NO_GO_ANGLE", 6, Sailboat, sail_no_go, 45),
+    AP_GROUPINFO("NO_GO_ANGLE", 6, Sailboat, sail_no_go, 30),
 
     // @Param: WNDSPD_MIN
     // @DisplayName: Sailboat minimum wind speed to sail in
@@ -657,6 +657,8 @@ float Sailboat::calc_heading(float desired_heading_cd)
         auto_tack_start_ms = now;
     }
 
+    _time_tacking = now - auto_tack_start_ms;
+
     // if we are tacking we maintain the target heading until the tack completes or times out
     if (currently_tacking) {
         // check if we have reached target
@@ -863,7 +865,7 @@ std::vector<Vector2f> Sailboat::calc_deliberative_tack_points_NE(float desired_h
     bool decider;
 
     // see which one is greater
-    if(bearing_L1 < bearing_L2){
+    if(bearing_L1 > bearing_L2){
         decider = true;
     } else {
         decider = false;

@@ -510,6 +510,25 @@ void Mode::navigate_to_waypoint()
 // calculate steering output given a turn rate and speed
 void Mode::calc_steering_from_turn_rate(float turn_rate, float speed, bool reversed)
 {
+    gcs().send_text(MAV_SEVERITY_INFO, "SEGUIMENTO DE LINHA");
+
+    float psi_ref = radians(g2.wp_nav.oa_wp_bearing_cd() * 0.01f);
+    float psi_current = rover.ahrs.yaw;
+    float true_wind = rover.g2.windvane.get_true_wind_direction_rad();
+
+    float alpha_current = fabs(wrap_PI(psi_current - true_wind));
+    float alpha_desired = fabs(wrap_PI(psi_ref - true_wind));
+
+    if (alpha_desired < alpha_current && fabs(psi_ref-psi_current) > radians(30))
+    {
+        //gcs().send_text(MAV_SEVERITY_INFO, "Sailboat ORÇANDO");
+    }
+
+    if (alpha_desired > alpha_current && fabs(psi_ref-psi_current) > radians(30))
+    {
+        //gcs().send_text(MAV_SEVERITY_INFO, "Sailboat ARRIBANDO");
+    }
+
     // calculate and send final steering command to motor library
     const float steering_out = attitude_control.get_steering_out_rate(turn_rate,
                                                                       g2.motors.limit.steer_left,
@@ -538,6 +557,26 @@ void Mode::calc_steering_from_lateral_acceleration(float lat_accel, bool reverse
 // rate_max is a maximum turn rate in deg/s.  set to zero to use default turn rate limits
 void Mode::calc_steering_to_heading(float desired_heading_cd, float rate_max_degs)
 {
+
+    gcs().send_text(MAV_SEVERITY_INFO, "ORIENTAÇÃO SUCESSIVAS");
+
+    float psi_ref = radians(desired_heading_cd * 0.01f);
+    float psi_current = rover.ahrs.yaw;
+    float true_wind = rover.g2.windvane.get_true_wind_direction_rad();
+
+    float alpha_current = fabs(wrap_PI(psi_current - true_wind));
+    float alpha_desired = fabs(wrap_PI(psi_ref - true_wind));
+
+    if (alpha_desired < alpha_current && fabs(psi_ref-psi_current) > radians(30))
+    {
+        //gcs().send_text(MAV_SEVERITY_INFO, "Sailboat ORÇANDO");
+    }
+
+    if (alpha_desired > alpha_current && fabs(psi_ref-psi_current) > radians(30))
+    {
+        //gcs().send_text(MAV_SEVERITY_INFO, "Sailboat ARRIBANDO");
+    }
+
     // call heading controller
     const float steering_out = attitude_control.get_steering_out_heading(radians(desired_heading_cd*0.01f),
                                                                          radians(rate_max_degs),

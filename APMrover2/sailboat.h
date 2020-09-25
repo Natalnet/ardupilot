@@ -122,6 +122,15 @@ public:
     // return sailboat waypoint following type
     AP_Float get_threshold_dtack() const {return sail_threshold_dtack;}
 
+    // return value of PID calc for speed controller
+    float get_pid_speed_value() const {return _pid_offset_speed;}
+
+    // return if the sailboat is tacking
+    bool get_currently_tacking() const {return currently_tacking;}
+
+    // return time tacking
+    uint32_t get_time_tacking() const {return _time_tacking;}    
+
 private:
 
     // true if motor is on to assist with slow tack
@@ -180,4 +189,5 @@ private:
     float _extr_turn_last_ms = 0.0f;
     float _polar_turn_last_ms = 0.0f;
     float _pid_offset_speed = 0.0f;
+    uint32_t _time_tacking;
 };

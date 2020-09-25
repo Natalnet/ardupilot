@@ -28,18 +28,24 @@ drag_curve = interp1(sail_aoa_in, drag_curve_in, sail_aoa);
 % Plot lift curve
 figure 
 subplot(2,1,1)
+ax = gca;
+ax.FontSize = 18;
 hold all
-title('Lift and Drag Curves')
+title('Curvas de arraste e sustentação aerodinâmica')
 scatter(sail_aoa_in,lift_curve_in,'*','r')
 plot(sail_aoa,lift_curve,'r')
-ylabel('Cl')
+ylabel('C_L')
+grid;
 
 subplot(2,1,2)
+ax = gca;
+ax.FontSize = 18;
 hold all
 scatter(sail_aoa_in,drag_curve_in,'*','b')
 plot(sail_aoa,drag_curve,'b')
-xlabel('AoA (deg)')
-ylabel('Cd')
+xlabel('Ângulo de ataque (graus)')
+ylabel('C_D')
+grid;
 
 %% VPP
 % Do for range of sailing angles and wind speeds, increse speed until foward force equals zero
@@ -116,12 +122,16 @@ for n = 1:length(wind_speed)
     hold on
     legend_val{n} = sprintf('%g m/s',wind_speed(n));
 end
+rticks([0 2 4 6])
+rticklabels({'','U = 2 m/s','U = 4 m/s','U = 6 m/s'})
 ax = gca;
 d = ax.ThetaDir;
 ax.ThetaDir = 'clockwise';
 ax.ThetaZeroLocation = 'top';
+ax = gca;
+ax.FontSize = 18;
 legend(legend_val)
-title('Polar Plot, boat speed (m/s) vs heading (deg)')
+title('Diagrama polar para várias velocidades de vento')
 
 
 %% Plot sail thrust and hull drag for a given heading

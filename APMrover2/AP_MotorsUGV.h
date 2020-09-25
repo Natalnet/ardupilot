@@ -67,6 +67,7 @@ public:
     // set mainsail input as a value from 0 to 100
     void set_mainsail(float mainsail);
     float get_mainsail() const { return _mainsail; }
+    float get_mainsail_angle() const { return linear_interpolate(0.0f, 90.0f, _mainsail, 0.0f, 100.0f); }
 
     // get slew limited throttle
     // used by manual mode to avoid bad steering behaviour during transitions from forward to reverse

@@ -146,7 +146,7 @@ void Rover::Log_Write_Sail()
                         (double)wind_dir_rel,
                         (double)wind_speed_true,
                         (double)wind_speed_apparent,
-                        (double)g2.motors.get_mainsail(),
+                        (double)g2.motors.get_mainsail_angle(),
                         (double)g2.sailboat.get_VMG());
 }
 
@@ -195,10 +195,13 @@ void Rover::Log_Write_Metrics3()
         return;
     }
 
-    logger.Write("MTC3", "TimeUS,NumberTacks",
-                        "sm", "F0", "Qf",
+    logger.Write("MTC3", "TimeUS,NumberTacks,SpdCtrlPid,IsTack,TimeTack",
+                        "smmms", "F000F", "QfffQ",
                         AP_HAL::micros64(),
-                        (double)g2.metrics.get_number_of_tacks());
+                        (double)g2.metrics.get_number_of_tacks(),
+                        (double)g2.sailboat.get_pid_speed_value(),
+                        (double)g2.sailboat.get_currently_tacking(),
+                        (double)g2.sailboat.get_time_tacking());
 }
 
 void Rover::Log_Write_External_Current()
